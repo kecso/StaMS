@@ -1,0 +1,24 @@
+{
+  "id": "FolderExport",
+  "name": "FolderExport",
+  "version": "0.1.0",
+  "description": "Export all File nodes to a downloadable zip of .sm files.",
+  "icon": {
+    "class": "glyphicon glyphicon-save",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "outputPath",
+      "displayName": "Output zip path",
+      "description": "Server-side path for the generated archive.",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}

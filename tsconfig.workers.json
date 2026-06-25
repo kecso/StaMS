@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/visualizers/widgets/MonacoEditor/langium.worker.ts",
+    "src/visualizers/widgets/SprottyDiagram/elk.worker.ts"
+  ]
+}

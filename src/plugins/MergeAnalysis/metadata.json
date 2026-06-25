@@ -1,0 +1,15 @@
+{
+  "id": "MergeAnalysis",
+  "name": "MergeAnalysis",
+  "version": "0.1.0",
+  "description": "Classify 3-way merge changes with domain-specific conflict rules.",
+  "icon": {
+    "class": "glyphicon glyphicon-random",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": []
+}

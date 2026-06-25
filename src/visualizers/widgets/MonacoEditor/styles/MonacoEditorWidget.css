@@ -1,0 +1,29 @@
+.monaco-editor-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #1e1e1e;
+    color: #d4d4d4;
+}
+
+.monaco-editor-widget .monaco-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: #252526;
+    border-bottom: 1px solid #333;
+}
+
+.monaco-editor-widget .monaco-editor-host {
+    flex: 1;
+    overflow: auto;
+}
+
+.monaco-editor-widget .monaco-placeholder {
+    margin: 0;
+    padding: 12px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+}

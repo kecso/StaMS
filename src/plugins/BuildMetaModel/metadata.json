@@ -1,0 +1,15 @@
+{
+  "id": "BuildMetaModel",
+  "name": "BuildMetaModel",
+  "version": "0.1.0",
+  "description": "Create the State Machine Studio meta-model (run once on EmptyProject).",
+  "icon": {
+    "class": "glyphicon glyphicon-th",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": true,
+  "configStructure": []
+}

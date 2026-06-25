@@ -1,0 +1,5 @@
+events {
+  timeout
+  reset
+  error
+}

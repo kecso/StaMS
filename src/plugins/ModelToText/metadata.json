@@ -1,0 +1,24 @@
+{
+  "id": "ModelToText",
+  "name": "ModelToText",
+  "version": "0.1.0",
+  "description": "Serialize structural model under a File node back to DSL text.",
+  "icon": {
+    "class": "glyphicon glyphicon-export",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": true,
+  "configStructure": [
+    {
+      "name": "fileNodePath",
+      "displayName": "File node path",
+      "description": "Path to the File node to serialize.",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}

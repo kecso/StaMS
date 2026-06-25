@@ -1,0 +1,19 @@
+machine Turnstile {
+  events {
+    coin
+    push
+  }
+  actions {
+    unlock()
+    lock()
+    alarm()
+  }
+  initial state Locked {
+    on coin -> Unlocked / unlock()
+    on push -> Locked / alarm()
+  }
+  state Unlocked {
+    on push -> Locked / lock()
+    on coin -> Unlocked
+  }
+}

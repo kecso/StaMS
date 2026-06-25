@@ -1,0 +1,14 @@
+[
+  {
+    "id": "MonacoEditor",
+    "title": "DSL Editor",
+    "panel": "panels/MonacoEditor/MonacoEditorPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "SprottyDiagram",
+    "title": "State Diagram",
+    "panel": "panels/SprottyDiagram/SprottyDiagramPanel",
+    "DEBUG_ONLY": false
+  }
+]

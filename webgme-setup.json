@@ -1,0 +1,64 @@
+{
+  "components": {
+    "plugins": {
+      "TextToModel": {
+        "src": "src/plugins/TextToModel",
+        "test": "test/plugins/TextToModel"
+      },
+      "ModelToText": {
+        "src": "src/plugins/ModelToText",
+        "test": "test/plugins/ModelToText"
+      },
+      "FolderImport": {
+        "src": "src/plugins/FolderImport",
+        "test": "test/plugins/FolderImport"
+      },
+      "FolderExport": {
+        "src": "src/plugins/FolderExport",
+        "test": "test/plugins/FolderExport"
+      },
+      "MergeAnalysis": {
+        "src": "src/plugins/MergeAnalysis",
+        "test": "test/plugins/MergeAnalysis"
+      },
+      "BuildMetaModel": {
+        "src": "src/plugins/BuildMetaModel",
+        "test": "test/plugins/BuildMetaModel"
+      }
+    },
+    "seeds": {
+      "StateMachine": {
+        "src": "src/seeds/StateMachine"
+      }
+    },
+    "visualizers": {
+      "MonacoEditor": {
+        "src": "panels/MonacoEditor/MonacoEditorPanel",
+        "title": "DSL Editor",
+        "panel": "src/visualizers/panels/MonacoEditor",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/MonacoEditor"
+      },
+      "SprottyDiagram": {
+        "src": "panels/SprottyDiagram/SprottyDiagramPanel",
+        "title": "State Diagram",
+        "panel": "src/visualizers/panels/SprottyDiagram",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/SprottyDiagram"
+      }
+    },
+    "routers": {
+      "StudioAssets": {
+        "src": "src/routers/StudioAssets",
+        "test": "test/routers/StudioAssets",
+        "mount": "build"
+      }
+    }
+  },
+  "dependencies": {
+    "plugins": {},
+    "seeds": {},
+    "visualizers": {},
+    "routers": {}
+  }
+}

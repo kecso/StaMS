@@ -1,0 +1,72 @@
+{
+  "name": "stams",
+  "version": "0.1.0",
+  "description": "State Machine Studio — WebGME + Langium + Monaco + Sprotty",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kecso/StaMS.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "setup": "npm install && npm install --prefix studio-ui && npm run build",
+    "prestart": "node scripts/ensure-build.js",
+    "start": "node app.js",
+    "start:ui": "npm run dev --prefix studio-ui",
+    "dev": "concurrently -n server,ui -c blue,green \"npm start\" \"npm run start:ui\"",
+    "build": "npm run build:langium && npm run build:workers && npm run build:plugins",
+    "build:all": "npm run build && npm run build:ui",
+    "build:langium": "langium generate",
+    "build:workers": "webpack --mode production --env skipLangiumCheck",
+    "build:plugins": "rollup -c rollup.config.mjs",
+    "build:ui": "npm run build --prefix studio-ui",
+    "clean": "node -e \"require('fs').rmSync('build',{recursive:true,force:true})\"",
+    "postinstall": "node -e \"try{require('child_process').execSync('npm run build:langium',{stdio:'inherit'})}catch(e){console.warn('Langium generate skipped:', e.message)}\"",
+    "test": "node ./node_modules/mocha/bin/mocha --recursive test",
+    "apply": "node ./node_modules/webgme-engine/src/bin/apply.js",
+    "diff": "node ./node_modules/webgme-engine/src/bin/diff.js",
+    "export": "node ./node_modules/webgme-engine/src/bin/export.js",
+    "import": "node ./node_modules/webgme-engine/src/bin/import.js",
+    "merge": "node ./node_modules/webgme-engine/src/bin/merge.js",
+    "plugin": "node ./node_modules/webgme-engine/src/bin/run_plugin.js",
+    "pluginHook": "node ./node_modules/webgme-engine/src/bin/plugin_hook.js",
+    "users": "node ./node_modules/webgme-engine/src/bin/usermanager.js",
+    "clean_up": "node ./node_modules/webgme-engine/src/bin/clean_up.js",
+    "seed": "node scripts/build-seed.js"
+  },
+  "peerDependencies": {
+    "webgme": "^2.23.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "chai": "^4.5.0",
+    "concurrently": "^9.1.2",
+    "langium-cli": "^3.5.0",
+    "mocha": "^5.2.0",
+    "rollup": "^4.40.2",
+    "rollup-plugin-copy": "^3.5.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webgme": "^2.49.0",
+    "webgme-cli": "^2.8.5",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "elkjs": "^0.9.3",
+    "langium": "^3.5.0",
+    "monaco-editor": "^0.52.2",
+    "monaco-languageclient": "^9.5.0",
+    "sprotty": "^1.4.0",
+    "sprotty-elk": "^1.4.0",
+    "vscode-jsonrpc": "^8.2.0",
+    "vscode-languageserver-protocol": "^3.17.5",
+    "vscode-ws-jsonrpc": "^3.4.0"
+  },
+  "overrides": {
+    "vscode-jsonrpc": "^8.2.0"
+  }
+}
