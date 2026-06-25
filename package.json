@@ -10,9 +10,10 @@
   "scripts": {
     "setup": "npm install && npm install --prefix studio-ui && npm run build",
     "prestart": "node scripts/ensure-build.js",
-    "start": "node app.js",
+    "start": "concurrently -n api,studio -c blue,green \"npm run start:server\" \"npm run start:ui\"",
+    "start:server": "node app.js",
     "start:ui": "npm run dev --prefix studio-ui",
-    "dev": "concurrently -n server,ui -c blue,green \"npm start\" \"npm run start:ui\"",
+    "dev": "npm start",
     "build": "npm run build:langium && npm run build:workers && npm run build:plugins",
     "build:all": "npm run build && npm run build:ui",
     "build:langium": "langium generate",

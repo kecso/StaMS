@@ -34,22 +34,33 @@ See `docs/DESIGN.md` for the full design document.
 # One-shot: installs server + studio-ui deps and builds everything
 npm run setup
 
-# Terminal 1 — WebGME API + plugins
+# Start the studio (custom UI on :4000 + WebGME API on :8888)
 npm start
-
-# Terminal 2 — React studio
-npm run start:ui
-
-# Or both:
-npm run dev
 ```
 
-- WebGME API: http://localhost:8888
-- Studio UI: http://localhost:4000
+Open **http://localhost:4000** — that is the main interface.
 
-`npm start` runs a `prestart` guard (`scripts/ensure-build.js`) that builds the web
-worker bundles on demand if they're missing, so `/build/workers/*` is never empty
-and the Monaco/Sprotty visualizers stay responsive. Warm starts skip the build.
+| URL | Service |
+|-----|---------|
+| http://localhost:4000 | **Studio UI** (project picker, editor shell) |
+| http://localhost:8888 | WebGME API (used by the studio via proxy) |
+
+`npm start` runs a `prestart` guard that installs `studio-ui` dependencies if needed
+and builds worker bundles when missing, so a fresh checkout works after `npm run setup`.
+
+**Prerequisites at runtime:** MongoDB must be running (`mongodb://127.0.0.1:27017/stams`).
+The studio UI proxies project operations to the WebGME API — it is not useful on its own
+without the API and a database behind it. Use `npm start` (both processes) for normal work.
+
+### Backend only
+
+For plugin development, CLI tools, or tests without the Next.js shell:
+
+```bash
+npm run start:server    # WebGME API on :8888 (requires MongoDB)
+```
+
+`npm run dev` is an alias for `npm start`.
 
 ### Build commands
 
@@ -98,11 +109,12 @@ Tracked in `docs/DESIGN.md` §11 — Foundation (this bootstrap) → Monaco → 
 
 | Command | Description |
 |---------|-------------|
-| `npm start` | WebGME standalone server |
-| `npm run start:ui` | Next.js studio on port 4000 |
-| `npm run dev` | Both server and UI |
-| `npm run build:langium` | Regenerate Langium parser |
-| `npm run build:workers` | Webpack worker bundles |
+| `npm run setup` | First-time install + full build |
+| `npm start` | **Studio UI (:4000) + WebGME API (:8888)** — normal way to run StaMS |
+| `npm run start:server` | WebGME API only (plugins, tests, CLI; requires MongoDB) |
+| `npm run dev` | Alias for `npm start` |
+| `npm run build` | Langium parser + workers + plugins |
+| `npm run build:all` | `build` + Next.js production UI |
 | `npm run plugin -- ...` | Run a plugin from CLI |
 | `npm run seed` | Seed export instructions |
 
