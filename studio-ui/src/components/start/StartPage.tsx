@@ -105,13 +105,13 @@ export default function StartPage() {
         )}
 
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, lg: 7 }}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <CreateProjectPanel takenNames={takenNames} onCreated={() => void refreshProjects()} />
           </Grid>
-          <Grid size={{ xs: 12, lg: 5 }}>
-            <Typography variant="h6">Current projects</Typography>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Typography variant="h6">State machines</Typography>
             <Typography variant="body2" color="text.secondary">
-              Loaded via <code>gmeClient.getProjects()</code> (WebSocket)
+              Existing state machine projects available to the guest user.
             </Typography>
             <ProjectListPanel projects={projects} />
           </Grid>

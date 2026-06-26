@@ -38,4 +38,6 @@ blob-local-storage/
 build/
 studio-ui/.next/
 studio-ui/node_modules/
+studio-ui/public/monaco/
+studio-ui/tsconfig.tsbuildinfo
 smstudio-extracted.txt

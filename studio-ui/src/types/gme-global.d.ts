@@ -14,6 +14,7 @@ export type GmeClient = {
   ) => void;
   seedProject: (
     params: {
+      type?: 'file' | 'db' | 'blob';
       projectName: string;
       seedName: string;
       seedBranch?: string;

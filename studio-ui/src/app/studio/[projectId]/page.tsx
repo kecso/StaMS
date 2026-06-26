@@ -3,7 +3,8 @@
 import {
   Alert,
   Box,
-  CircularProgress,
+  Button,
+  Chip,
   Paper,
   Stack,
   Tab,
@@ -11,49 +12,57 @@ import {
   Typography
 } from '@mui/material';
 import { useParams, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import StudioLayout from '@/components/StudioLayout';
+import SmEditor from '@/components/editor/SmEditor';
 import { useGmeClient } from '@/contexts/GmeClientContext';
 import { selectProject } from '@/lib/gme-projects';
+import { EXAMPLE_SM, loadDoc, saveDoc } from '@/lib/sm-document';
 
-const exampleDsl = `machine Turnstile {
-  events { coin push }
-  actions { unlock() lock() alarm() }
-  initial state Locked {
-    on coin -> Unlocked / unlock()
-    on push -> Locked / alarm()
-  }
-  state Unlocked {
-    on push -> Locked / lock()
-    on coin -> Unlocked
-  }
-}`;
+type ProjectState = 'idle' | 'opening' | 'open' | 'error';
 
 export default function StudioPage() {
   const params = useParams<{ projectId: string }>();
   const searchParams = useSearchParams();
   const projectId = decodeURIComponent(params.projectId);
   const initialTab = searchParams.get('panel') === 'diagram' ? 1 : 0;
+
   const [tab, setTab] = useState(initialTab);
   const { client, state } = useGmeClient();
-  const [projectState, setProjectState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [projectState, setProjectState] = useState<ProjectState>('idle');
   const [projectError, setProjectError] = useState<string | null>(null);
+  const [text, setText] = useState('');
 
+  // Load the document for this project (interim: localStorage).
+  useEffect(() => {
+    setText(loadDoc(projectId) ?? '');
+  }, [projectId]);
+
+  const handleChange = useCallback(
+    (next: string) => {
+      setText(next);
+      saveDoc(projectId, next);
+    },
+    [projectId]
+  );
+
+  const insertExample = useCallback(() => {
+    setText(EXAMPLE_SM);
+    saveDoc(projectId, EXAMPLE_SM);
+  }, [projectId]);
+
+  // Open the project on the WebGME connection in the background (non-blocking).
   useEffect(() => {
     if (!client || state !== 'connected') {
       return;
     }
-
     let cancelled = false;
-    setProjectState('loading');
+    setProjectState('opening');
     setProjectError(null);
-
     void selectProject(client, projectId)
       .then(() => {
-        if (!cancelled) {
-          setProjectState('ready');
-        }
+        if (!cancelled) setProjectState('open');
       })
       .catch((err) => {
         if (!cancelled) {
@@ -61,7 +70,6 @@ export default function StudioPage() {
           setProjectState('error');
         }
       });
-
     return () => {
       cancelled = true;
     };
@@ -72,90 +80,78 @@ export default function StudioPage() {
     [projectId]
   );
 
-  if (state !== 'connected' || projectState === 'loading') {
-    return (
-      <StudioLayout breadcrumbs={breadcrumbs}>
-        <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
-          <CircularProgress />
-          <Typography color="text.secondary">
-            Opening project via <code>gmeClient.selectProject()</code>…
-          </Typography>
-        </Stack>
-      </StudioLayout>
-    );
-  }
-
-  if (projectState === 'error') {
-    return (
-      <StudioLayout breadcrumbs={breadcrumbs}>
-        <Alert severity="error">{projectError ?? 'Failed to open project'}</Alert>
-      </StudioLayout>
-    );
-  }
+  const connectionChip = (() => {
+    if (state !== 'connected') {
+      return <Chip size="small" color="warning" label="Connecting to WebGME…" />;
+    }
+    if (projectState === 'opening') {
+      return <Chip size="small" color="info" label="Opening project…" />;
+    }
+    if (projectState === 'error') {
+      return <Chip size="small" color="error" label="Project open failed" />;
+    }
+    if (projectState === 'open') {
+      return <Chip size="small" color="success" label="Project open" />;
+    }
+    return <Chip size="small" variant="outlined" label="Idle" />;
+  })();
 
   return (
     <StudioLayout breadcrumbs={breadcrumbs}>
       <Stack spacing={2} sx={{ height: 'calc(100vh - 160px)' }}>
-        <Alert severity="info">
-          Project <strong>{projectId}</strong> is open on the WebGME WebSocket connection. Wire territory
-          events here to drive Monaco and Sprotty — visualizer logic lives in{' '}
-          <code>src/visualizers/</code> and <code>build/workers/</code>.
-        </Alert>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+            {projectId}.sm
+          </Typography>
+          {connectionChip}
+          <Box sx={{ flex: 1 }} />
+          {text.trim().length === 0 && (
+            <Button size="small" variant="outlined" onClick={insertExample}>
+              Insert turnstile example
+            </Button>
+          )}
+        </Stack>
+
+        {projectState === 'error' && (
+          <Alert severity="warning">
+            {projectError ?? 'Could not open the project on WebGME.'} The text editor below still works
+            (saved locally); WebGME model sync will attach once the metamodel seed is in place.
+          </Alert>
+        )}
 
         <Tabs value={tab} onChange={(_, value) => setTab(value)}>
-          <Tab label="DSL Editor" />
-          <Tab label="State Diagram" />
+          <Tab label="Text (.sm)" />
+          <Tab label="Diagram" />
           <Tab label="Object Tree" />
         </Tabs>
 
-        <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: tab === 2 ? '280px 1fr' : '1fr', gap: 2 }}>
-          {tab === 2 && (
-            <Paper variant="outlined" sx={{ p: 2, overflow: 'auto' }}>
+        <Paper
+          variant="outlined"
+          sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+        >
+          {tab === 0 && <SmEditor value={text} onChange={handleChange} />}
+
+          {tab === 1 && (
+            <Box sx={{ p: 3 }}>
               <Typography variant="subtitle2" gutterBottom>
-                Model tree
+                State diagram (derived view)
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Project / File / Machine / State / Transition nodes will appear here once a territory is
-                registered on the open GME client.
+                The diagram will be projected from the parsed `.sm` model. This is the next step after
+                the text editor; it will render states and transitions read-only via Sprotty + ELK.
               </Typography>
-            </Paper>
+            </Box>
           )}
 
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 0,
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              bgcolor: tab === 1 ? '#fafbfc' : '#1e1e1e',
-              color: tab === 1 ? 'text.primary' : '#d4d4d4'
-            }}
-          >
-            {tab === 0 && (
-              <Box component="pre" sx={{ m: 0, p: 2, fontFamily: 'Consolas, monospace', fontSize: 13, flex: 1 }}>
-                {exampleDsl}
-              </Box>
-            )}
-            {tab === 1 && (
-              <Box sx={{ flex: 1, p: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Sprotty diagram placeholder
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  ELK layout + Sprotty rendering will mount here for the active Machine node.
-                </Typography>
-              </Box>
-            )}
-            {tab === 2 && (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Select a node in the tree to open the DSL editor or diagram.
-                </Typography>
-              </Box>
-            )}
-          </Paper>
-        </Box>
+          {tab === 2 && (
+            <Box sx={{ p: 3 }}>
+              <Typography variant="body2" color="text.secondary">
+                The model tree (Machine / State / Transition …) will appear here once the `.sm` text is
+                synced into WebGME nodes.
+              </Typography>
+            </Box>
+          )}
+        </Paper>
       </Stack>
     </StudioLayout>
   );

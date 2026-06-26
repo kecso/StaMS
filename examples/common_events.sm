@@ -1,5 +1,0 @@
-events {
-  timeout
-  reset
-  error
-}

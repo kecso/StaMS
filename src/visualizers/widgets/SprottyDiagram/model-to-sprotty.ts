@@ -51,8 +51,8 @@ export function modelToSprottyGraph(machine: GmeNodeSnapshot): SGraph {
         graph.children.push({
             type: 'edge:transition',
             id: transition.path,
-            sourceId: transition.pointers.source || '',
-            targetId: transition.pointers.target || ''
+            sourceId: transition.pointers.src || transition.pointers.source || '',
+            targetId: transition.pointers.dst || transition.pointers.target || ''
         });
     });
 

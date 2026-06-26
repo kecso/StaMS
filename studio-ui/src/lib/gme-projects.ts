@@ -23,6 +23,12 @@ export function createProjectFromSeed(
   return new Promise((resolve, reject) => {
     client.seedProject(
       {
+        // WebGME defaults the seed type to 'db' (copy an existing project). Our
+        // seeds (EmptyProject, StateMachine) are file seeds registered via
+        // config.seedProjects.basePaths, so 'file' must be set explicitly —
+        // otherwise it tries to read a DB project named `seedName` and fails
+        // with "Not authorized to read project [...]".
+        type: 'file',
         projectName,
         seedName,
         seedBranch: 'master',

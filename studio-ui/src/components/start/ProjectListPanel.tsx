@@ -33,7 +33,7 @@ export default function ProjectListPanel({ projects }: ProjectListPanelProps) {
   if (projects.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        No StaMS projects yet. Create one from a seed on the left.
+        No state machines yet. Create one to get started.
       </Typography>
     );
   }

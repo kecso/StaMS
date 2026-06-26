@@ -1,5 +1,9 @@
 /*globals define*/
 /*eslint-env node, browser*/
+/**
+ * WebGME metamodel sketch — kept in sync with state-machine.langium.
+ * Used as reference when authoring the StateMachine seed; not executed at runtime.
+ */
 define([], function () {
     'use strict';
 
@@ -8,36 +12,29 @@ define([], function () {
             {
                 name: 'Project',
                 attributes: ['name'],
-                children: ['File'],
+                children: ['File', 'Machine'],
                 pointers: {},
                 sets: {}
             },
             {
                 name: 'File',
-                attributes: ['name', 'content'],
-                children: ['Machine'],
+                attributes: ['path'],
+                children: [],
                 pointers: {},
                 sets: {}
             },
             {
                 name: 'Machine',
                 attributes: ['name'],
-                children: ['State', 'Event', 'Action', 'Transition', 'Import'],
-                pointers: { initialState: 'State' },
+                children: ['Variable', 'Event', 'Action', 'Guard', 'Constraint', 'State', 'Transition'],
+                pointers: { definedIn: 'File' },
                 sets: {}
             },
             {
-                name: 'State',
-                attributes: ['name', 'isInitial', 'isFinal'],
-                children: ['State'],
-                pointers: {},
-                sets: {}
-            },
-            {
-                name: 'Transition',
-                attributes: ['guardExpr', 'actionExpr'],
+                name: 'Variable',
+                attributes: ['name', 'type', 'initExpr'],
                 children: [],
-                pointers: { source: 'State', target: 'State', trigger: 'Event' },
+                pointers: {},
                 sets: {}
             },
             {
@@ -55,10 +52,37 @@ define([], function () {
                 sets: {}
             },
             {
-                name: 'Import',
-                attributes: ['ref'],
+                name: 'Guard',
+                attributes: ['name', 'body'],
                 children: [],
-                pointers: { resolvedFile: 'File' },
+                pointers: {},
+                sets: {}
+            },
+            {
+                name: 'Constraint',
+                attributes: ['name', 'kind', 'body'],
+                children: [],
+                pointers: {},
+                sets: {}
+            },
+            {
+                name: 'State',
+                attributes: ['name', 'isInitial', 'isFinal'],
+                children: ['State', 'Transition'],
+                pointers: { entry: 'Action', run: 'Action', exit: 'Action' },
+                sets: {}
+            },
+            {
+                name: 'Transition',
+                attributes: [],
+                children: [],
+                pointers: {
+                    src: 'State',
+                    dst: 'State',
+                    event: 'Event',
+                    guard: 'Guard',
+                    action: 'Action'
+                },
                 sets: {}
             }
         ],

@@ -10,11 +10,11 @@ import { theme } from '@/theme';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta id="mounted-path" content="" />
       </head>
-      <body suppressHydrationWarning {...{ 'on-gme-init': 'onGMEInit()' }}>
+      <body suppressHydrationWarning>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />

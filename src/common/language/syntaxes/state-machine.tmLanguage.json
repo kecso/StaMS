@@ -10,7 +10,7 @@
     },
     {
       "name": "keyword.control.state-machine",
-      "match": "\\b(actions|events|import|initial|machine|on|state)\\b"
+      "match": "\\b(actions|constraints|do|entry|events|exit|file|final|float|goal|guard|guards|in|initial|machine|on|run|safety|state|string|variables)\\b"
     },
     {
       "name": "string.quoted.double.state-machine",

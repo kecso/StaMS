@@ -6,9 +6,10 @@ var assert = require('assert');
 describe('StaMS bootstrap', function () {
     it('defines all meta-model types from the design doc', function () {
         var names = [
-            'Project', 'File', 'Machine', 'State', 'Transition', 'Event', 'Action', 'Import'
+            'Project', 'File', 'Machine', 'Variable', 'Event', 'Action', 'Guard',
+            'Constraint', 'State', 'Transition'
         ];
-        assert.strictEqual(names.length, 8);
+        assert.strictEqual(names.length, 10);
     });
 
     it('creates merge annotation payloads', function () {

@@ -3,16 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/copy-monaco.mjs",
     "dev": "next dev -p 4000",
+    "prebuild": "node scripts/copy-monaco.mjs",
     "build": "next build",
     "start": "next start -p 4000"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
     "@mui/material-nextjs": "^6.4.8",
+    "monaco-editor": "^0.55.1",
     "next": "^15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

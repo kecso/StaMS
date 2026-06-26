@@ -1,3 +1,4 @@
+import type { ValidationAcceptor } from 'langium';
 import type { ValidationChecks } from 'langium';
 import type { StateMachineServices } from './state-machine-module.js';
 import type { Machine, State, StateMachineAstType } from './generated/ast.js';
@@ -13,18 +14,47 @@ export function registerValidationChecks(services: StateMachineServices): void {
 }
 
 export class StateMachineValidator {
-    checkMachine(machine: Machine): void {
-        const hasInitial = machine.states.some((state) => this.isInitialState(state));
-        if (!hasInitial) {
-            // Phase 5: report diagnostic — machine must declare an initial state
+    checkMachine(machine: Machine, accept: ValidationAcceptor): void {
+        const initialStates = collectStates(machine.states).filter((state) => state.isInitial);
+        if (initialStates.length === 0) {
+            accept('error', 'Machine must declare exactly one initial state.', {
+                node: machine,
+                property: 'states'
+            });
+        } else if (initialStates.length > 1) {
+            accept('error', 'Machine must declare only one initial state.', {
+                node: initialStates[1],
+                property: 'isInitial'
+            });
+        }
+
+        const stateNames = new Set<string>();
+        collectStates(machine.states).forEach((state) => {
+            if (stateNames.has(state.name)) {
+                accept('error', `Duplicate state name "${state.name}".`, {
+                    node: state,
+                    property: 'name'
+                });
+            }
+            stateNames.add(state.name);
+        });
+    }
+
+    checkState(state: State, accept: ValidationAcceptor): void {
+        if (state.isInitial && state.isFinal) {
+            accept('error', 'A state cannot be both initial and final.', {
+                node: state,
+                property: 'isFinal'
+            });
         }
     }
+}
 
-    checkState(_state: State): void {
-        // Phase 5: unreachable-state analysis
-    }
-
-    private isInitialState(state: State): boolean {
-        return Boolean(state.$cstNode?.text.startsWith('initial'));
-    }
+function collectStates(states: State[]): State[] {
+    const found: State[] = [];
+    states.forEach((state) => {
+        found.push(state);
+        found.push(...collectStates(state.states));
+    });
+    return found;
 }
