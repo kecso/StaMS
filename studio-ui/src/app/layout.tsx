@@ -5,16 +5,20 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
+import { GmeClientProvider } from '@/contexts/GmeClientContext';
 import { theme } from '@/theme';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <head>
+        <meta id="mounted-path" content="" />
+      </head>
+      <body suppressHydrationWarning {...{ 'on-gme-init': 'onGMEInit()' }}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {children}
+            <GmeClientProvider>{children}</GmeClientProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

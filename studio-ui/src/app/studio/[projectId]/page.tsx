@@ -3,6 +3,7 @@
 import {
   Alert,
   Box,
+  CircularProgress,
   Paper,
   Stack,
   Tab,
@@ -10,9 +11,11 @@ import {
   Typography
 } from '@mui/material';
 import { useParams, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import StudioLayout from '@/components/StudioLayout';
+import { useGmeClient } from '@/contexts/GmeClientContext';
+import { selectProject } from '@/lib/gme-projects';
 
 const exampleDsl = `machine Turnstile {
   events { coin push }
@@ -33,18 +36,70 @@ export default function StudioPage() {
   const projectId = decodeURIComponent(params.projectId);
   const initialTab = searchParams.get('panel') === 'diagram' ? 1 : 0;
   const [tab, setTab] = useState(initialTab);
+  const { client, state } = useGmeClient();
+  const [projectState, setProjectState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [projectError, setProjectError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!client || state !== 'connected') {
+      return;
+    }
+
+    let cancelled = false;
+    setProjectState('loading');
+    setProjectError(null);
+
+    void selectProject(client, projectId)
+      .then(() => {
+        if (!cancelled) {
+          setProjectState('ready');
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setProjectError(err instanceof Error ? err.message : 'Failed to open project');
+          setProjectState('error');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, state, projectId]);
 
   const breadcrumbs = useMemo(
     () => [{ label: 'Projects', href: '/' }, { label: projectId }],
     [projectId]
   );
 
+  if (state !== 'connected' || projectState === 'loading') {
+    return (
+      <StudioLayout breadcrumbs={breadcrumbs}>
+        <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
+          <CircularProgress />
+          <Typography color="text.secondary">
+            Opening project via <code>gmeClient.selectProject()</code>…
+          </Typography>
+        </Stack>
+      </StudioLayout>
+    );
+  }
+
+  if (projectState === 'error') {
+    return (
+      <StudioLayout breadcrumbs={breadcrumbs}>
+        <Alert severity="error">{projectError ?? 'Failed to open project'}</Alert>
+      </StudioLayout>
+    );
+  }
+
   return (
     <StudioLayout breadcrumbs={breadcrumbs}>
       <Stack spacing={2} sx={{ height: 'calc(100vh - 160px)' }}>
         <Alert severity="info">
-          React studio shell (bootstrap). Wire GME client territory events here to drive Monaco and Sprotty
-          panels — visualizer logic lives in <code>src/visualizers/</code> and <code>build/workers/</code>.
+          Project <strong>{projectId}</strong> is open on the WebGME WebSocket connection. Wire territory
+          events here to drive Monaco and Sprotty — visualizer logic lives in{' '}
+          <code>src/visualizers/</code> and <code>build/workers/</code>.
         </Alert>
 
         <Tabs value={tab} onChange={(_, value) => setTab(value)}>
@@ -60,8 +115,8 @@ export default function StudioPage() {
                 Model tree
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Project / File / Machine / State / Transition nodes will appear here once the GME client is
-                connected.
+                Project / File / Machine / State / Transition nodes will appear here once a territory is
+                registered on the open GME client.
               </Typography>
             </Paper>
           )}
