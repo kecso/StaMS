@@ -17,8 +17,7 @@ export function listProjects(client: GmeClient): Promise<GmeProjectRecord[]> {
 export function createProjectFromSeed(
   client: GmeClient,
   projectName: string,
-  seedName: string,
-  ownerId = 'guest'
+  seedName: string
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     client.seedProject(
@@ -31,8 +30,7 @@ export function createProjectFromSeed(
         type: 'file',
         projectName,
         seedName,
-        seedBranch: 'master',
-        ownerId
+        seedBranch: 'master'
       },
       (err, result) => {
         if (err) {

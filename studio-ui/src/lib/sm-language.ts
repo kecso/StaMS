@@ -12,9 +12,7 @@ import type { Monaco } from '@monaco-editor/react';
 export const SM_LANGUAGE_ID = 'state-machine';
 
 const KEYWORDS = [
-  'file',
   'machine',
-  'in',
   'variables',
   'events',
   'actions',

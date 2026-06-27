@@ -1,6 +1,4 @@
-file "turnstile.sm"
-
-machine Turnstile in "turnstile.sm" {
+machine Turnstile {
   variables {
     alarmCount: float = 0.0
   }

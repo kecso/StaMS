@@ -18,6 +18,7 @@ import StudioLayout from '@/components/StudioLayout';
 import SmEditor from '@/components/editor/SmEditor';
 import { useGmeClient } from '@/contexts/GmeClientContext';
 import { selectProject } from '@/lib/gme-projects';
+import { projectDisplayName } from '@/lib/project-seeds';
 import { EXAMPLE_SM, loadDoc, saveDoc } from '@/lib/sm-document';
 
 type ProjectState = 'idle' | 'opening' | 'open' | 'error';
@@ -26,6 +27,7 @@ export default function StudioPage() {
   const params = useParams<{ projectId: string }>();
   const searchParams = useSearchParams();
   const projectId = decodeURIComponent(params.projectId);
+  const displayName = projectDisplayName(projectId);
   const initialTab = searchParams.get('panel') === 'diagram' ? 1 : 0;
 
   const [tab, setTab] = useState(initialTab);
@@ -76,8 +78,8 @@ export default function StudioPage() {
   }, [client, state, projectId]);
 
   const breadcrumbs = useMemo(
-    () => [{ label: 'Projects', href: '/' }, { label: projectId }],
-    [projectId]
+    () => [{ label: 'Projects', href: '/' }, { label: displayName }],
+    [displayName]
   );
 
   const connectionChip = (() => {
@@ -101,7 +103,7 @@ export default function StudioPage() {
       <Stack spacing={2} sx={{ height: 'calc(100vh - 160px)' }}>
         <Stack direction="row" alignItems="center" spacing={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-            {projectId}.sm
+            {displayName}.sm
           </Typography>
           {connectionChip}
           <Box sx={{ flex: 1 }} />

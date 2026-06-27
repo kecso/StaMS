@@ -4,17 +4,16 @@ This grammar is the source of truth for parsing. The WebGME metamodel in `meta-m
 
 ## Scope (current)
 
-- One `.sm` file may declare a `file` path and one or more `machine` blocks.
+- One `.sm` file declares one or more `machine` blocks.
 - Imports / cross-file references are **not** supported yet.
-- `Machine.definedIn` links to a `File` node (path attribute); tooling can set this from the filename when omitted in text.
+- The textual language has no notion of files; storage-side mapping to a WebGME `File` node (which holds the `.sm` text) is an implementation detail of sync, not part of the DSL.
 
 ## Concepts
 
 | Concept | Role | Containment | Attributes | References |
 |---------|------|-------------|------------|------------|
-| `Model` | Root of one `.sm` file | `FileDecl`, `Machine` | — | — |
-| `FileDecl` | Logical file handle | — | `path` | — |
-| `Machine` | First behavioral container | variables, events, actions, guards, constraints, states | `name`, `definedInPath?` | — |
+| `Model` | Root of one `.sm` file | `Machine` | — | — |
+| `Machine` | First behavioral container | variables, events, actions, guards, constraints, states | `name` | — |
 | `Variable` | Machine-wide typed variable | — | `name`, `type` (`float` \| `string`), `init?` | — |
 | `Event` | Trigger name | — | `name` | — |
 | `Action` | Side-effect body (assignments / expressions) | — | `name`, `body` | — |

@@ -16,7 +16,8 @@ const STUDIO_UI_DIR = path.join(ROOT, 'studio-ui');
 const STUDIO_UI_NEXT = path.join(STUDIO_UI_DIR, 'node_modules', 'next');
 const REQUIRED_ARTIFACTS = [
     path.join(ROOT, 'build', 'workers', 'langium.worker.js'),
-    path.join(ROOT, 'build', 'workers', 'elk.worker.js')
+    path.join(ROOT, 'build', 'workers', 'elk.worker.js'),
+    path.join(ROOT, 'build', 'stams', 'sm-langium.js')
 ];
 
 function run(command, label) {

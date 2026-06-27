@@ -21,3 +21,12 @@ export const STATE_MACHINE_SEED: ProjectSeedTemplate = {
 export function projectStudioPath(project: GmeProjectRecord): string {
   return `/studio/${encodeURIComponent(project._id)}`;
 }
+
+/**
+ * WebGME project ids are owner-qualified (`<owner>+<name>`). The studio has no
+ * notion of users, so display only the name portion.
+ */
+export function projectDisplayName(projectId: string): string {
+  const separator = projectId.indexOf('+');
+  return separator === -1 ? projectId : projectId.slice(separator + 1);
+}

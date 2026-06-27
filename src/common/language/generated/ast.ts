@@ -43,13 +43,11 @@ export type StateMachineKeywordNames =
     | "entry"
     | "events"
     | "exit"
-    | "file"
     | "final"
     | "float"
     | "goal"
     | "guard"
     | "guards"
-    | "in"
     | "initial"
     | "machine"
     | "on"
@@ -76,14 +74,6 @@ export const Statement = 'Statement';
 
 export function isStatement(item: unknown): item is Statement {
     return reflection.isInstance(item, Statement);
-}
-
-export type TopLevelElement = FileDecl | Machine;
-
-export const TopLevelElement = 'TopLevelElement';
-
-export function isTopLevelElement(item: unknown): item is TopLevelElement {
-    return reflection.isInstance(item, TopLevelElement);
 }
 
 export type VarType = 'float' | 'string';
@@ -209,19 +199,6 @@ export function isExpressionStmt(item: unknown): item is ExpressionStmt {
     return reflection.isInstance(item, ExpressionStmt);
 }
 
-/** Logical file handle (path only). Sync maps this to a WebGME File node; not a container in the metamodel. */
-export interface FileDecl extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'FileDecl';
-    path: string;
-}
-
-export const FileDecl = 'FileDecl';
-
-export function isFileDecl(item: unknown): item is FileDecl {
-    return reflection.isInstance(item, FileDecl);
-}
-
 export interface GuardDecl extends langium.AstNode {
     readonly $container: GuardsBlock;
     readonly $type: 'GuardDecl';
@@ -252,7 +229,6 @@ export interface Machine extends langium.AstNode {
     readonly $type: 'Machine';
     actionsBlock?: ActionsBlock;
     constraintsBlock?: ConstraintsBlock;
-    definedInPath?: string;
     eventsBlock?: EventsBlock;
     guardsBlock?: GuardsBlock;
     name: string;
@@ -268,7 +244,7 @@ export function isMachine(item: unknown): item is Machine {
 
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
-    elements: Array<TopLevelElement>;
+    machines: Array<Machine>;
 }
 
 export const Model = 'Model';
@@ -371,7 +347,6 @@ export type StateMachineAstType = {
     EventsBlock: EventsBlock
     Expression: Expression
     ExpressionStmt: ExpressionStmt
-    FileDecl: FileDecl
     GuardDecl: GuardDecl
     GuardsBlock: GuardsBlock
     Machine: Machine
@@ -379,7 +354,6 @@ export type StateMachineAstType = {
     OrExpr: OrExpr
     State: State
     Statement: Statement
-    TopLevelElement: TopLevelElement
     Transition: Transition
     VariableDecl: VariableDecl
     VariablesBlock: VariablesBlock
@@ -388,7 +362,7 @@ export type StateMachineAstType = {
 export class StateMachineAstReflection extends langium.AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return [ActionDecl, ActionsBlock, AndExpr, Assignment, ConstraintDecl, ConstraintsBlock, EventDecl, EventsBlock, Expression, ExpressionStmt, FileDecl, GuardDecl, GuardsBlock, Machine, Model, OrExpr, State, Statement, TopLevelElement, Transition, VariableDecl, VariablesBlock];
+        return [ActionDecl, ActionsBlock, AndExpr, Assignment, ConstraintDecl, ConstraintsBlock, EventDecl, EventsBlock, Expression, ExpressionStmt, GuardDecl, GuardsBlock, Machine, Model, OrExpr, State, Statement, Transition, VariableDecl, VariablesBlock];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -400,10 +374,6 @@ export class StateMachineAstReflection extends langium.AbstractAstReflection {
             case Assignment:
             case ExpressionStmt: {
                 return this.isSubtype(Statement, supertype);
-            }
-            case FileDecl:
-            case Machine: {
-                return this.isSubtype(TopLevelElement, supertype);
             }
             default: {
                 return false;
@@ -525,14 +495,6 @@ export class StateMachineAstReflection extends langium.AbstractAstReflection {
                     ]
                 };
             }
-            case FileDecl: {
-                return {
-                    name: FileDecl,
-                    properties: [
-                        { name: 'path' }
-                    ]
-                };
-            }
             case GuardDecl: {
                 return {
                     name: GuardDecl,
@@ -556,7 +518,6 @@ export class StateMachineAstReflection extends langium.AbstractAstReflection {
                     properties: [
                         { name: 'actionsBlock' },
                         { name: 'constraintsBlock' },
-                        { name: 'definedInPath' },
                         { name: 'eventsBlock' },
                         { name: 'guardsBlock' },
                         { name: 'name' },
@@ -569,7 +530,7 @@ export class StateMachineAstReflection extends langium.AbstractAstReflection {
                 return {
                     name: Model,
                     properties: [
-                        { name: 'elements', defaultValue: [] }
+                        { name: 'machines', defaultValue: [] }
                     ]
                 };
             }

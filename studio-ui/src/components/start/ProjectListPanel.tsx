@@ -54,7 +54,7 @@ export default function ProjectListPanel({ projects }: ProjectListPanelProps) {
         >
           <ListItemText
             primary={project.name}
-            secondary={`${project.owner} · ${project.info?.kind ?? 'project'}`}
+            secondary={project.info?.kind ?? 'State machine'}
           />
           <Chip
             size="small"

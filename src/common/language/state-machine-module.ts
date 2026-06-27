@@ -40,6 +40,7 @@ export function createStateMachineServices(context: DefaultSharedModuleContext):
         StateMachineGeneratedModule,
         StateMachineModule
     );
+    shared.ServiceRegistry.register(StateMachine);
     registerValidationChecks(StateMachine);
     return { shared, StateMachine };
 }

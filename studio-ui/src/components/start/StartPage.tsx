@@ -69,7 +69,7 @@ export default function StartPage() {
         <WelcomeHeader />
         <Stack spacing={2} sx={{ maxWidth: 560, mx: 'auto', py: 6, px: 3 }}>
           <Alert severity="error">
-            {error ?? 'Could not connect to WebGME. Ensure MongoDB is running and `npm start` launched the API on port 8888.'}
+            {error ?? 'Could not connect to WebGME. Ensure `npm start` launched the API on port 8888.'}
           </Alert>
           <Button variant="contained" onClick={reconnect}>
             Retry connection
@@ -79,9 +79,7 @@ export default function StartPage() {
     );
   }
 
-  const takenNames = (projects ?? [])
-    .filter((project) => project.owner === 'guest')
-    .map((project) => project.name);
+  const takenNames = (projects ?? []).map((project) => project.name);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -111,7 +109,7 @@ export default function StartPage() {
           <Grid size={{ xs: 12, md: 7 }}>
             <Typography variant="h6">State machines</Typography>
             <Typography variant="body2" color="text.secondary">
-              Existing state machine projects available to the guest user.
+              Projects in this session (in-memory workspace; use import/export for `.sm` files).
             </Typography>
             <ProjectListPanel projects={projects} />
           </Grid>

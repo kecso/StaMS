@@ -23,9 +23,7 @@ export function saveDoc(projectId: string, text: string): void {
   window.localStorage.setItem(PREFIX + projectId, text);
 }
 
-export const EXAMPLE_SM = `file "turnstile.sm"
-
-machine Turnstile in "turnstile.sm" {
+export const EXAMPLE_SM = `machine Turnstile {
   variables { alarmCount: float = 0.0 }
   events { coin push }
   actions {

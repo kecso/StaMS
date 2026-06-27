@@ -1,17 +1,10 @@
 grammar StateMachine
 
 entry Model:
-    (elements+=TopLevelElement)*;
-
-TopLevelElement:
-    FileDecl | Machine;
-
-/** Logical file handle (path only). Sync maps this to a WebGME File node; not a container in the metamodel. */
-FileDecl:
-    'file' path=STRING ';'?;
+    (machines+=Machine)*;
 
 Machine:
-    'machine' name=ID ('in' definedInPath=STRING)? '{'
+    'machine' name=ID '{'
         (variablesBlock=VariablesBlock)?
         (eventsBlock=EventsBlock)?
         (actionsBlock=ActionsBlock)?

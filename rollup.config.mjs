@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 
@@ -19,12 +20,57 @@ const external = [
     'fs',
     'path',
     'archiver',
-    'webgme'
+    'webgme',
+    'stams/gme-helpers',
+    'stams/sm-langium'
 ];
 
 const pluginNames = Object.keys(webgmeSetup.components.plugins || {});
 
-export default pluginNames.map((name) => {
+const commonBundles = [
+    {
+        input: 'src/common/sm-langium.ts',
+        output: {
+            file: 'build/stams/sm-langium.cjs',
+            format: 'cjs',
+            sourcemap: true,
+            inlineDynamicImports: true
+        },
+        external: [],
+        plugins: [
+            resolve({
+                preferBuiltins: true,
+                exportConditions: ['node', 'import', 'default']
+            }),
+            commonjs(),
+            json(),
+            typescript({
+                tsconfig: './tsconfig.json',
+                compilerOptions: {
+                    rootDir: '.',
+                    outDir: 'build',
+                    declaration: false,
+                    declarationMap: false,
+                    composite: false,
+                    sourceMap: true
+                }
+            }),
+            copy({
+                targets: [
+                    {
+                        src: 'src/common/sm-langium.amd.js',
+                        dest: 'build/stams',
+                        rename: 'sm-langium.js'
+                    }
+                ]
+            })
+        ]
+    }
+];
+
+export default [
+    ...commonBundles,
+    ...pluginNames.map((name) => {
     const tsEntry = path.join('src', 'plugins', name, `${name}.ts`);
     const jsEntry = path.join('src', 'plugins', name, `${name}.js`);
 
@@ -68,4 +114,5 @@ export default pluginNames.map((name) => {
             })
         ]
     };
-});
+    })
+];

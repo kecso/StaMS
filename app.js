@@ -12,9 +12,10 @@ myServer = new webgme.standaloneServer(gmeConfig);
 myServer.start(function (err) {
     if (err) {
         console.error('\n[StaMS] WebGME server failed to start.');
-        console.error('[StaMS] port: ' + (gmeConfig.server.port) +
-            ', mongo: ' + gmeConfig.mongo.uri);
-        if (/ECONNREFUSED|failed to connect|topology|MongoNetworkError/i.test(String(err && err.message))) {
+        console.error('[StaMS] port: ' + gmeConfig.server.port +
+            ', storage: ' + gmeConfig.storage.database.type);
+        if (gmeConfig.storage.database.type.toLowerCase() === 'mongo' &&
+            /ECONNREFUSED|failed to connect|topology|MongoNetworkError/i.test(String(err && err.message))) {
             console.error('[StaMS] Could not reach MongoDB — is it running at ' +
                 gmeConfig.mongo.uri + ' ?');
         }

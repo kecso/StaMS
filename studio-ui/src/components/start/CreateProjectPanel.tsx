@@ -47,7 +47,7 @@ export default function CreateProjectPanel({ takenNames, onCreated }: CreateProj
     try {
       const projectId = await createProjectFromSeed(client, trimmed, STATE_MACHINE_SEED.seedName);
       onCreated();
-      router.push(projectStudioPath({ _id: projectId, name: trimmed, owner: 'guest' }));
+      router.push(projectStudioPath({ _id: projectId, name: trimmed }));
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : 'Failed to create project');
     } finally {

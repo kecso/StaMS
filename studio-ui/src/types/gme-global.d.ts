@@ -46,7 +46,7 @@ export type GmeClientNode = {
 export type GmeProjectRecord = {
   _id: string;
   name: string;
-  owner: string;
+  owner?: string;
   info?: {
     kind?: string;
     modifiedAt?: string;
