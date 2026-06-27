@@ -13,7 +13,9 @@ import { useState } from 'react';
 
 import { useGmeClient } from '@/contexts/GmeClientContext';
 import { createProjectFromSeed } from '@/lib/gme-projects';
-import { STATE_MACHINE_SEED, projectStudioPath } from '@/lib/project-seeds';
+import { STATE_MACHINE_SEED } from '@/lib/project-seeds';
+import { saveDoc } from '@/lib/sm-document';
+import { STUDIO_PATH, setWorkspace } from '@/lib/workspace';
 
 type CreateProjectPanelProps = {
   takenNames: string[];
@@ -47,7 +49,9 @@ export default function CreateProjectPanel({ takenNames, onCreated }: CreateProj
     try {
       const projectId = await createProjectFromSeed(client, trimmed, STATE_MACHINE_SEED.seedName);
       onCreated();
-      router.push(projectStudioPath({ _id: projectId, name: trimmed }));
+      setWorkspace(projectId, trimmed);
+      saveDoc('');
+      router.push(STUDIO_PATH);
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : 'Failed to create project');
     } finally {

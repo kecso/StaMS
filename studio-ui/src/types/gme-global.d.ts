@@ -28,6 +28,24 @@ export type GmeClient = {
     callback: (err: Error | null) => void
   ) => void;
   closeProject: (callback?: (err: Error | null) => void) => void;
+  getActiveProjectId?: () => string | null;
+  getActiveBranchName?: () => string | null;
+  getActiveCommitHash?: () => string | null;
+  runServerPlugin: (
+    pluginId: string,
+    context: {
+      managerConfig: {
+        project: string;
+        branchName: string;
+        commitHash: string;
+        activeNode: string;
+        activeSelection?: string[];
+        namespace?: string;
+      };
+      pluginConfig: Record<string, unknown>;
+    },
+    callback: (err: Error | null, result: { success?: boolean; messages?: Array<{ severity: string; message: string }>; error?: string } | null) => void
+  ) => void;
   addUI: (pattern: unknown, handler: (events: unknown[]) => void, guid?: string) => string;
   updateTerritory: (uiId: string, patterns: Record<string, { children: number }>) => void;
   removeUI: (uiId: string) => void;

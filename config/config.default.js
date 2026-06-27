@@ -1,6 +1,7 @@
 'use strict';
 
-var config = require('./config.webgme'),
+var path = require('path'),
+    config = require('./config.webgme'),
     validateConfig = require('webgme/config/validator');
 
 config.server.port = 8888;
@@ -20,7 +21,16 @@ config.authentication.enable = false;
 // Prefer the custom React studio over the stock WebGME UI for day-to-day work.
 config.client.pageTitle = 'StaMS — State Machine Studio';
 
-// Serve worker bundles and other build artifacts at /build (via StudioAssets router).
+// Single-server UI: exported Next.js app (see webgme-dss public/ pattern).
+config.client.appDir = path.join(__dirname, '../studio-ui/out');
+
+// StudioUi router: serves /studio/ when using static export paths.
+config.rest.components.StudioUi = {
+    src: path.join(__dirname, '../src/routers/StudioUi/StudioUi.js'),
+    mount: '',
+    options: {}
+};
+
 config.rest.components.StudioAssets = config.rest.components.StudioAssets || {};
 config.rest.components.StudioAssets.mount = 'build';
 

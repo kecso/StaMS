@@ -13,7 +13,7 @@ import {
 import Link from 'next/link';
 
 import type { GmeProjectRecord } from '@/lib/gme-projects';
-import { projectStudioPath } from '@/lib/project-seeds';
+import { STUDIO_PATH } from '@/lib/workspace';
 
 type ProjectListPanelProps = {
   projects: GmeProjectRecord[] | null;
@@ -44,7 +44,7 @@ export default function ProjectListPanel({ projects }: ProjectListPanelProps) {
         <ListItemButton
           key={project._id}
           component={Link}
-          href={projectStudioPath(project)}
+          href={STUDIO_PATH}
           sx={{
             border: 1,
             borderColor: 'divider',

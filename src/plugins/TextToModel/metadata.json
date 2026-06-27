@@ -2,7 +2,7 @@
   "id": "TextToModel",
   "name": "TextToModel",
   "version": "0.1.0",
-  "description": "Parse DSL text (Langium) and incrementally sync structural model under a File node.",
+  "description": "Parse DSL text (Langium) and sync structural model nodes from the current editor text.",
   "icon": {
     "class": "glyphicon glyphicon-transfer",
     "src": ""
@@ -13,9 +13,9 @@
   "writeAccessRequired": true,
   "configStructure": [
     {
-      "name": "fileNodePath",
-      "displayName": "File node path",
-      "description": "Path to the File node whose content should be parsed.",
+      "name": "text",
+      "displayName": "DSL text",
+      "description": "Current `.sm` document text to parse and sync into the WebGME model.",
       "value": "",
       "valueType": "string",
       "readOnly": false

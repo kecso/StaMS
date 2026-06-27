@@ -5,6 +5,7 @@
   "scripts": {
     "predev": "node scripts/copy-monaco.mjs",
     "dev": "next dev -p 4000",
+    "dev:proxy": "WEBGME_URL=http://localhost:8888 next dev -p 4000",
     "prebuild": "node scripts/copy-monaco.mjs",
     "build": "next build",
     "start": "next start -p 4000"

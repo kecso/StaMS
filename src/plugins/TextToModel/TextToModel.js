@@ -5,9 +5,8 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
-    'stams/gme-helpers',
     'stams/sm-langium'
-], function (PluginConfig, pluginMetadata, PluginBase, GmeHelpers, SmLangium) {
+], function (PluginConfig, pluginMetadata, PluginBase, SmLangium) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -22,17 +21,14 @@ define([
     TextToModel.prototype.constructor = TextToModel;
 
     /**
-     * Parse `.sm` text with Langium (stams/sm-langium) and traverse the AST.
+     * Parse `.sm` text from plugin config (Langium) and traverse the AST.
      * GME node creation / incremental diff is the next step after this parse pass.
      */
     TextToModel.prototype.main = function (callback) {
         var self = this,
             core = self.core,
             config = self.getCurrentConfig(),
-            filePath = config.fileNodePath,
-            fileNode,
-            content,
-            machines;
+            content = config.text || '';
 
         function finish(err) {
             if (err) {
@@ -50,21 +46,12 @@ define([
 
         self.result.setSuccess(false);
 
-        if (!filePath) {
+        if (!content.trim()) {
             core.setRegistry(self.rootNode, 'TextToModel_bootstrap', Date.now().toString());
             return self.save('bootstrap', finish);
         }
 
-        fileNode = core.getNode(core.getRoot(self.rootNode), filePath);
-        if (!fileNode || !GmeHelpers.isTypeOf(core, fileNode, GmeHelpers.META_TYPES.FILE)) {
-            callback(new Error('fileNodePath must reference a File node'), self.result);
-            return;
-        }
-
-        content = core.getAttribute(fileNode, 'content') || '';
-        machines = GmeHelpers.getChildrenOfType(core, fileNode, GmeHelpers.META_TYPES.MACHINE);
-
-        SmLangium.parseSm(content, 'memory:///' + filePath + '.sm')
+        SmLangium.parseSm(content, 'memory:///document.sm')
             .then(function (parsed) {
                 var summary = SmLangium.summarizeModel(parsed.model, parsed.diagnostics);
 
@@ -107,9 +94,7 @@ define([
                 });
 
                 self.logger.info(
-                    'TextToModel parsed file=' + filePath +
-                    ', textLength=' + content.length +
-                    ', existingMachines=' + machines.length +
+                    'TextToModel parsed textLength=' + content.length +
                     ', ast=' + JSON.stringify(summary)
                 );
 

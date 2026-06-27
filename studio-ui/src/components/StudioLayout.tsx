@@ -53,7 +53,7 @@ export default function StudioLayout({
         {children}
       </Container>
       <Box component="footer" sx={{ py: 1, textAlign: 'center', color: 'text.secondary', fontSize: 12 }}>
-        State Machine Studio — WebGME + Langium + Monaco + Sprotty
+        State Machine Studio
       </Box>
     </Box>
   );

@@ -8,19 +8,17 @@ Repository: [github.com/kecso/StaMS](https://github.com/kecso/StaMS)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  studio-ui (Next.js + React + MUI)  :4000                   │
-│  DSS-style start page · gmeClient over WebSocket (socket.io)  │
-│  Proxies /gme-dist, /gmeConfig.json, /socket.io → :8888     │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ WebSocket (not REST for model data)
-┌──────────────────────────▼──────────────────────────────────┐
-│  WebGME Server  :8888                                        │
-│  Plugins · Seed · Visualizers (panel/control/widget)         │
-│  Langium workers · ELK workers · merge annotations           │
+│  WebGME Server  :8888  (single process)                       │
+│  ├─ API / socket.io / gme-dist (engine)                      │
+│  ├─ studio-ui/out  (exported Next.js — config.client.appDir) │
+│  ├─ /build         (workers, plugins via StudioAssets)     │
+│  └─ /studio/       (StudioUi router → studio/index.html)     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-The **stock WebGME UI is not the primary interface**. The React `studio-ui` app follows patterns from [webgme-dss](https://github.com/webgme/webgme-dss): a welcome header with seed-based project creation and a project list, all backed by `gmeClient.getProjects()` / `seedProject()` / `selectProject()` over WebSockets. Next.js rewrites keep the browser on a single origin (`:4000`) so socket.io connects correctly.
+The **stock WebGME UI is not the primary interface**. The React studio follows the [webgme-dss](https://github.com/webgme/webgme-dss) pattern: webpack/Next builds into a static `appDir`, and `webgme.standaloneServer` serves everything on one port. The browser talks to WebGME directly (same origin) — no proxy layer in production.
+
+For **hot reload during development**, `npm run dev` still runs Next.js on `:4000` with rewrites to `:8888`.
 
 WebGME visualizers (`MonacoEditor`, `SprottyDiagram`) remain registered for parity with standard WebGME architecture and can be embedded later.
 
@@ -37,16 +35,16 @@ See `docs/DESIGN.md` for the full design document.
 # One-shot: installs server + studio-ui deps and builds everything
 npm run setup
 
-# Start the studio (custom UI on :4000 + WebGME API on :8888)
+# Start the studio (single WebGME server on :8888)
 npm start
 ```
 
-Open **http://localhost:4000** — that is the main interface.
+Open **http://localhost:8888** — that is the main interface.
 
 | URL | Service |
 |-----|---------|
-| http://localhost:4000 | **Studio UI** (project picker, editor shell) |
-| http://localhost:8888 | WebGME server (WebSocket + assets; proxied by the studio) |
+| http://localhost:8888 | **StaMS studio** (exported Next.js + WebGME API) |
+| http://localhost:4000 | Dev-only: Next.js with HMR (`npm run dev`) |
 
 `npm start` runs a `prestart` guard that installs `studio-ui` dependencies if needed
 and builds worker bundles when missing, so a fresh checkout works after `npm run setup`.

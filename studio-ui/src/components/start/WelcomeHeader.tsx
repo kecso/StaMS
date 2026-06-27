@@ -23,8 +23,8 @@ export default function WelcomeHeader() {
         Create and edit state machines
       </Typography>
       <Typography variant="body1" sx={{ mt: 1.5, color: 'rgba(255,255,255,0.78)', maxWidth: 720, mx: 'auto' }}>
-        StaMS keeps the WebGME project model underneath, but the studio is focused on one task:
-        creating state machines and editing their textual and diagram views.
+        Create a new state machine or open an existing `.sm` file. Your work stays in memory
+        for this session — export to `.sm` when you need to save or share.
       </Typography>
     </Box>
   );

@@ -54,6 +54,7 @@ describe('TextToModel', function () {
     it('should run plugin and update the branch', function (done) {
         var manager = new PluginCliManager(null, logger, gmeConfig),
             pluginConfig = {
+                text: ''
             },
             context = {
                 project: project,

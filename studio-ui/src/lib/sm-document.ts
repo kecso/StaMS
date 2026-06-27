@@ -1,26 +1,21 @@
 /**
- * Local persistence for a project's `.sm` document.
- *
- * Interim store: the WebGME metamodel (File/Machine nodes) is not in place yet,
- * so the editor text is kept in localStorage keyed by project. Once the seed
- * exists, this module is the single place to swap in WebGME-backed load/save
- * (File node content + TextToModel sync).
+ * Local persistence for the single workspace `.sm` document.
  */
 
-const PREFIX = 'stams:doc:';
+const DOC_KEY = 'stams:doc';
 
-export function loadDoc(projectId: string): string | null {
+export function loadDoc(): string | null {
   if (typeof window === 'undefined') {
     return null;
   }
-  return window.localStorage.getItem(PREFIX + projectId);
+  return window.localStorage.getItem(DOC_KEY);
 }
 
-export function saveDoc(projectId: string, text: string): void {
+export function saveDoc(text: string): void {
   if (typeof window === 'undefined') {
     return;
   }
-  window.localStorage.setItem(PREFIX + projectId, text);
+  window.localStorage.setItem(DOC_KEY, text);
 }
 
 export const EXAMPLE_SM = `machine Turnstile {
