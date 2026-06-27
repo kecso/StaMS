@@ -5,7 +5,10 @@ var path = require('path'),
     validateConfig = require('webgme/config/validator');
 
 config.server.port = 8888;
-// Required by the config validator even when storage is in-memory.
+
+// Model/commit storage: in-memory for this session (see storage.database.type below).
+// GmeAuth + project metadata still use MongoDB today; app.js starts an embedded
+// mongod on a random port unless STAMS_MONGO_URI points at an external instance.
 config.mongo.uri = 'mongodb://127.0.0.1:27017/stams';
 
 // Ephemeral workspace: projects live in RAM for the session. `.sm` files (and

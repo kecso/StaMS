@@ -27,7 +27,7 @@ See `docs/DESIGN.md` for the full design document.
 ## Prerequisites
 
 - Node.js ≥ 20
-- MongoDB (default `mongodb://127.0.0.1:27017/stams`)
+- No external MongoDB required for normal use — StaMS starts a private ephemeral `mongod` on a random port (via `mongodb-memory-server`) because webgme-engine's GmeAuth still requires MongoDB even when model storage is `memory`. Set `STAMS_MONGO_URI` to use your own MongoDB instead.
 
 ## Quick start
 
@@ -49,17 +49,14 @@ Open **http://localhost:8888** — that is the main interface.
 `npm start` runs a `prestart` guard that installs `studio-ui` dependencies if needed
 and builds worker bundles when missing, so a fresh checkout works after `npm run setup`.
 
-**Prerequisites at runtime:** MongoDB must be running (`mongodb://127.0.0.1:27017/stams`).
-The studio UI loads `webgme.classes.build.js` and talks to WebGME over **WebSockets** (socket.io),
-proxied through Next.js — it is not useful on its own without the WebGME server and MongoDB.
-Use `npm start` (both processes) for normal work.
+**Runtime:** `npm start` runs a single WebGME server on `:8888` with an embedded MongoDB for auth/metadata (random port, discarded on exit). Model data uses in-memory storage. For an external MongoDB, set `STAMS_MONGO_URI` (e.g. `mongodb://127.0.0.1:27017/stams`).
 
 ### Backend only
 
 For plugin development, CLI tools, or tests without the Next.js shell:
 
 ```bash
-npm run start:server    # WebGME API on :8888 (requires MongoDB)
+npm run start:server    # WebGME API on :8888 (embedded Mongo by default)
 ```
 
 `npm run dev` is an alias for `npm start`.
@@ -113,7 +110,7 @@ Tracked in `docs/DESIGN.md` §11 — Foundation (this bootstrap) → Monaco → 
 |---------|-------------|
 | `npm run setup` | First-time install + full build |
 | `npm start` | **Studio UI (:4000) + WebGME API (:8888)** — normal way to run StaMS |
-| `npm run start:server` | WebGME API only (plugins, tests, CLI; requires MongoDB) |
+| `npm run start:server` | WebGME API only (plugins, tests, CLI; embedded Mongo unless `STAMS_MONGO_URI` set) |
 | `npm run dev` | Alias for `npm start` |
 | `npm run build` | Langium parser + workers + plugins |
 | `npm run build:all` | `build` + Next.js production UI |

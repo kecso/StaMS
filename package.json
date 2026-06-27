@@ -62,6 +62,7 @@
     "langium": "^3.5.0",
     "monaco-editor": "^0.52.2",
     "monaco-languageclient": "^9.5.0",
+    "mongodb-memory-server": "^10.4.3",
     "sprotty": "^1.4.0",
     "sprotty-elk": "^1.4.0",
     "vscode-jsonrpc": "^8.2.0",

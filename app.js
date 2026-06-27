@@ -2,28 +2,72 @@
 'use strict';
 process.chdir(__dirname);
 
-var gmeConfig = require('./config'),
-    webgme = require('webgme'),
-    myServer;
+const { startEmbeddedMongo, stopEmbeddedMongo } = require('./scripts/embedded-mongo');
 
-webgme.addToRequireJsPaths(gmeConfig);
+let shuttingDown = false;
 
-myServer = new webgme.standaloneServer(gmeConfig);
-myServer.start(function (err) {
-    if (err) {
-        console.error('\n[StaMS] WebGME server failed to start.');
-        console.error('[StaMS] port: ' + gmeConfig.server.port +
-            ', storage: ' + gmeConfig.storage.database.type);
-        if (gmeConfig.storage.database.type.toLowerCase() === 'mongo' &&
-            /ECONNREFUSED|failed to connect|topology|MongoNetworkError/i.test(String(err && err.message))) {
-            console.error('[StaMS] Could not reach MongoDB — is it running at ' +
-                gmeConfig.mongo.uri + ' ?');
-        }
-        console.error(err && err.stack ? err.stack : err);
-        // Exit non-zero so `concurrently --kill-others-on-fail` tears down the studio (:4000).
-        process.exit(1);
-        return;
+async function resolveMongoUri(gmeConfig) {
+    if (process.env.STAMS_MONGO_URI) {
+        console.log('[StaMS] Using external MongoDB (STAMS_MONGO_URI)');
+        return process.env.STAMS_MONGO_URI;
     }
 
-    console.log('[StaMS] WebGME server listening on port ' + gmeConfig.server.port);
+    const embedded = await startEmbeddedMongo();
+    console.log('[StaMS] Using embedded MongoDB (ephemeral, random port — not your system :27017)');
+    console.log('[StaMS] embedded mongo uri: ' + embedded.uri);
+    return embedded.uri;
+}
+
+async function shutdown(server) {
+    if (shuttingDown) {
+        return;
+    }
+    shuttingDown = true;
+
+    await new Promise((resolve) => {
+        if (!server || typeof server.stop !== 'function') {
+            resolve();
+            return;
+        }
+        server.stop(() => resolve());
+    });
+    await stopEmbeddedMongo();
+}
+
+async function main() {
+    const gmeConfig = require('./config');
+    const webgme = require('webgme');
+
+    gmeConfig.mongo.uri = await resolveMongoUri(gmeConfig);
+    webgme.addToRequireJsPaths(gmeConfig);
+
+    const myServer = new webgme.standaloneServer(gmeConfig);
+
+    const handleSignal = () => {
+        void shutdown(myServer).finally(() => process.exit(0));
+    };
+    process.on('SIGINT', handleSignal);
+    process.on('SIGTERM', handleSignal);
+
+    await new Promise((resolve, reject) => {
+        myServer.start((err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            console.log('[StaMS] WebGME server listening on port ' + gmeConfig.server.port);
+            console.log('[StaMS] model storage: ' + gmeConfig.storage.database.type);
+            resolve();
+        });
+    });
+}
+
+main().catch(async (err) => {
+    console.error('\n[StaMS] WebGME server failed to start.');
+    if (process.env.STAMS_MONGO_URI) {
+        console.error('[StaMS] Could not reach MongoDB at ' + process.env.STAMS_MONGO_URI);
+    }
+    console.error(err && err.stack ? err.stack : err);
+    await stopEmbeddedMongo();
+    process.exit(1);
 });

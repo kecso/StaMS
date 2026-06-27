@@ -1,6 +1,7 @@
 'use client';
 
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import HistoryIcon from '@mui/icons-material/History';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import {
   Alert,
@@ -11,19 +12,25 @@ import {
   Typography
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import WelcomeHeader from '@/components/start/WelcomeHeader';
 import { useGmeClient } from '@/contexts/GmeClientContext';
 import { createProjectFromSeed } from '@/lib/gme-projects';
 import { WORKSPACE_SEED } from '@/lib/project-seeds';
 import { saveDoc } from '@/lib/sm-document';
-import { STUDIO_PATH, setWorkspace } from '@/lib/workspace';
+import { STUDIO_PATH, getWorkspaceDocName, hasWorkspace, setWorkspace } from '@/lib/workspace';
 
 function docNameFromFile(filename: string): string {
   const base = filename.replace(/\.sm$/i, '').trim();
   const safe = base.replace(/[^\w.-]+/g, '_').replace(/^_|_$/g, '');
   return safe || WORKSPACE_SEED.defaultName;
+}
+
+function workspaceProjectName(): string {
+  const time = Date.now().toString(36);
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `stams_${time}_${suffix}`;
 }
 
 export default function StartPage() {
@@ -32,6 +39,11 @@ export default function StartPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [latestDocName, setLatestDocName] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLatestDocName(hasWorkspace() ? getWorkspaceDocName() : null);
+  }, []);
 
   const openStudio = useCallback(
     (projectId: string, docName: string, text: string) => {
@@ -51,7 +63,7 @@ export default function StartPage() {
     try {
       const projectId = await createProjectFromSeed(
         client,
-        WORKSPACE_SEED.defaultName,
+        workspaceProjectName(),
         WORKSPACE_SEED.seedName
       );
       openStudio(projectId, WORKSPACE_SEED.defaultName, '');
@@ -74,7 +86,7 @@ export default function StartPage() {
         const docName = docNameFromFile(file.name);
         const projectId = await createProjectFromSeed(
           client,
-          WORKSPACE_SEED.defaultName,
+          workspaceProjectName(),
           WORKSPACE_SEED.seedName
         );
         openStudio(projectId, docName, text);
@@ -125,6 +137,18 @@ export default function StartPage() {
         </Typography>
 
         {actionError && <Alert severity="error">{actionError}</Alert>}
+
+        {latestDocName && (
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<HistoryIcon />}
+            disabled={busy}
+            onClick={() => router.push(STUDIO_PATH)}
+          >
+            Return to {latestDocName}.sm
+          </Button>
+        )}
 
         <Button
           variant="contained"

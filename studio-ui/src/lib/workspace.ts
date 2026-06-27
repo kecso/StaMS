@@ -31,6 +31,10 @@ export function getWorkspaceDocName(): string {
   return window.sessionStorage.getItem(DOC_NAME_KEY) ?? DEFAULT_DOC_NAME;
 }
 
+export function hasWorkspace(): boolean {
+  return getWorkspaceProjectId() !== null;
+}
+
 export function clearWorkspace(): void {
   if (typeof window === 'undefined') {
     return;
