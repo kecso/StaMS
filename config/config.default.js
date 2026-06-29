@@ -37,6 +37,13 @@ config.rest.components.StudioUi = {
 config.rest.components.StudioAssets = config.rest.components.StudioAssets || {};
 config.rest.components.StudioAssets.mount = 'build';
 
+// Langium parse API for studio editor diagnostics (POST /api/stams/parse).
+config.rest.components.SmParse = {
+    src: path.join(__dirname, '../src/routers/SmParse/SmParse.js'),
+    mount: 'api/stams',
+    options: {}
+};
+
 // Bundled Langium runtime for server plugins (TextToModel, ModelToText, …).
 config.requirejsPaths = config.requirejsPaths || {};
 config.requirejsPaths['stams/sm-langium'] = './build/stams/sm-langium';

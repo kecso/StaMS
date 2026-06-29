@@ -19,7 +19,7 @@ This grammar is the source of truth for parsing. The WebGME metamodel in `meta-m
 | `Action` | Side-effect body (assignments / expressions) | — | `name`, `body` | — |
 | `Guard` | Boolean check body | — | `name`, `body` | — |
 | `Constraint` | Requirement (`safety` or `goal`) | — | `kind`, `name`, `body` | — |
-| `State` | State (composite nesting allowed) | transitions, substates | `name`, `isInitial?`, `isFinal?` | `entry?`, `run?`, `exit?` → Action |
+| `State` | State | transitions | `name`, `isInitial?`, `isFinal?` | `entry?`, `run?`, `exit?` → Action |
 | `Transition` | Edge from source state | — | — | `event` → Event, `target` → State, `guard?` → Guard, `action?` → Action |
 
 Transition **source** is the containing `State` (implicit in text; stored as `src` pointer in WebGME).
@@ -45,4 +45,4 @@ Langium linking resolves cross-references. Additional checks live in `state-mach
 
 ## Diagram layout
 
-Diagram **structure** (states, transitions) is projected from the WebGME `Machine` subgraph (`model-to-sprotty.ts`). **Positions** are computed at render time by the ELK worker (`elk.worker.ts`), not stored in the `.sm` text. Optional persisted layout can be added later as WebGME registry attributes on `State` nodes if manual edits should survive reload.
+Diagram **structure** (states, transitions) is built in the studio via `studio-ui/src/lib/sm-diagram-from-client.ts`, or in the WebGME visualizer via `model-to-sprotty.ts`. **Positions** are computed at render time by the ELK worker (`elk.worker.ts`), not stored in the `.sm` text. Optional persisted layout can be added later as WebGME registry attributes on `State` nodes if manual edits should survive reload.

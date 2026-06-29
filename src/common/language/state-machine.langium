@@ -64,7 +64,6 @@ State:
         ('run' run=[ActionDecl:ID])?
         ('exit' exit=[ActionDecl:ID])?
         (transitions+=Transition)*
-        (states+=State)*
     '}';
 
 /** Source state is the containing State; target, guard, and action are explicit references. */

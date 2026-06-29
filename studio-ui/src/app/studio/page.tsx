@@ -12,19 +12,23 @@ import {
   Typography
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import SmDiagram from '@/components/diagram/SmDiagram';
 import StudioLayout from '@/components/StudioLayout';
 import SmEditor from '@/components/editor/SmEditor';
 import { useGmeClient } from '@/contexts/GmeClientContext';
-import { selectProject } from '@/lib/gme-projects';
+import { closeProject, selectProject } from '@/lib/gme-projects';
+import { subscribeProjectTerritory } from '@/lib/gme-territory';
+import { buildSmDiagramFromClient, PROJECT_ROOT } from '@/lib/sm-diagram-from-client';
 import { EXAMPLE_SM, loadDoc, saveDoc } from '@/lib/sm-document';
-import { validateSm } from '@/lib/sm-language';
+import { countDiagnostics, useSmValidation } from '@/lib/sm-parse';
 import {
   syncModelFromText,
   type ModelSyncStatus
 } from '@/lib/sm-model-sync';
-import { getWorkspaceDocName, getWorkspaceProjectId } from '@/lib/workspace';
+import type { SmDiagramView } from '@/types/sprotty-diagram';
+import { clearWorkspace, getWorkspaceDocName, getWorkspaceProjectId } from '@/lib/workspace';
 
 type WorkspaceState = 'idle' | 'opening' | 'open' | 'error';
 
@@ -39,9 +43,15 @@ export default function StudioPage() {
   const [workspaceState, setWorkspaceState] = useState<WorkspaceState>('idle');
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [text, setText] = useState('');
-  const [textValid, setTextValid] = useState(false);
+  const validation = useSmValidation(text);
+  const textValid = validation.valid;
   const [syncStatus, setSyncStatus] = useState<ModelSyncStatus>('idle');
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [diagramView, setDiagramView] = useState<SmDiagramView | null>(null);
+  const [activeMachineId, setActiveMachineId] = useState<string | undefined>();
+  const activeMachineIdRef = useRef<string | undefined>(undefined);
+
+  activeMachineIdRef.current = activeMachineId;
 
   useEffect(() => {
     const id = getWorkspaceProjectId();
@@ -57,17 +67,6 @@ export default function StudioPage() {
     setText(next);
     saveDoc(next);
   }, []);
-
-  const handleValidationChange = useCallback((validState: { valid: boolean }) => {
-    setTextValid(validState.valid);
-  }, []);
-
-  useEffect(() => {
-    if (tab !== 0) {
-      const diagnostics = validateSm(text);
-      setTextValid(!diagnostics.some((d) => d.severity === 'error'));
-    }
-  }, [text, tab]);
 
   useEffect(() => {
     if (!projectId || !text.trim() || !textValid) {
@@ -94,6 +93,12 @@ export default function StudioPage() {
         if (!cancelled) {
           setSyncStatus(result.status);
           setSyncMessage(result.message ?? null);
+          // TextToModel commits on the server; the client picks up the new hash via
+          // NEW_COMMIT_STATE → territory reload → rebuild (see diagram effect).
+          if (result.status === 'synced') {
+            // eslint-disable-next-line no-console
+            console.log('[SmSync] TextToModel ok, client commit:', client.getActiveCommitHash?.());
+          }
         }
       });
     }, MODEL_SYNC_DEBOUNCE_MS);
@@ -121,15 +126,53 @@ export default function StudioPage() {
         if (!cancelled) setWorkspaceState('open');
       })
       .catch((err) => {
-        if (!cancelled) {
-          setWorkspaceError(err instanceof Error ? err.message : 'Could not load workspace');
-          setWorkspaceState('error');
+        if (cancelled) {
+          return;
         }
+        // The project is gone (e.g. server restarted — model storage is in-memory
+        // and the embedded mongo is ephemeral). Stop the client from watching the
+        // dead project (otherwise it keeps re-joining the missing room on every
+        // reconnect, spamming "no such project" on the server), clear the stale
+        // workspace, and return to the start page.
+        void closeProject(client).catch(() => undefined);
+        clearWorkspace();
+        setWorkspaceError(err instanceof Error ? err.message : 'Could not load workspace');
+        setWorkspaceState('error');
+        router.replace('/');
       });
     return () => {
       cancelled = true;
     };
   }, [client, state, projectId]);
+
+  useEffect(() => {
+    if (!client || workspaceState !== 'open') {
+      setDiagramView(null);
+      return;
+    }
+
+    const rebuild = () => {
+      setDiagramView(buildSmDiagramFromClient(client, activeMachineIdRef.current));
+    };
+
+    const subscription = subscribeProjectTerritory(client, PROJECT_ROOT, rebuild);
+
+    const commitEvent = client.CONSTANTS?.NEW_COMMIT_STATE ?? 'NEW_COMMIT_STATE';
+    client.addEventListener?.(commitEvent, rebuild);
+
+    return () => {
+      subscription.release();
+      client.removeEventListener?.(commitEvent, rebuild);
+    };
+  }, [client, workspaceState]);
+
+  const handleMachineChange = useCallback(
+    (machineId: string) => {
+      setActiveMachineId(machineId);
+      setDiagramView((view) => (view ? { ...view, activeMachineId: machineId } : view));
+    },
+    []
+  );
 
   const breadcrumbs = useMemo(
     () => [{ label: 'Home', href: '/' }, { label: docName }],
@@ -156,6 +199,36 @@ export default function StudioPage() {
     return <Chip size="small" variant="outlined" label="Idle" />;
   })();
 
+  const validationChip = (() => {
+    if (validation.loading) {
+      return <Chip size="small" color="info" variant="outlined" label="Checking…" />;
+    }
+    const { errors, warnings } = countDiagnostics(validation.diagnostics);
+    if (errors > 0) {
+      const detail = warnings > 0 ? ` (${warnings} warning${warnings === 1 ? '' : 's'})` : '';
+      return (
+        <Chip
+          size="small"
+          color="error"
+          variant="outlined"
+          label={`${errors} error${errors === 1 ? '' : 's'}${detail}`}
+        />
+      );
+    }
+    if (warnings > 0) {
+      return (
+        <Chip
+          size="small"
+          color="warning"
+          variant="outlined"
+          label={`${warnings} warning${warnings === 1 ? '' : 's'}`}
+        />
+      );
+    }
+    const sourceHint = validation.source === 'local' ? ' (offline rules)' : '';
+    return <Chip size="small" color="success" variant="outlined" label={`Valid${sourceHint}`} />;
+  })();
+
   const modelSyncChip = (() => {
     switch (syncStatus) {
       case 'pending':
@@ -179,6 +252,7 @@ export default function StudioPage() {
             {docName}.sm
           </Typography>
           {connectionChip}
+          {validationChip}
           {modelSyncChip}
           <Box sx={{ flex: 1 }} />
           {text.trim().length === 0 && (
@@ -204,7 +278,6 @@ export default function StudioPage() {
         <Tabs value={tab} onChange={(_, value) => setTab(value)}>
           <Tab label="Text (.sm)" />
           <Tab label="Diagram" />
-          <Tab label="Object Tree" />
         </Tabs>
 
         <Paper
@@ -212,31 +285,11 @@ export default function StudioPage() {
           sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
         >
           {tab === 0 && (
-            <SmEditor
-              value={text}
-              onChange={handleChange}
-              onValidationChange={handleValidationChange}
-            />
+            <SmEditor value={text} onChange={handleChange} diagnostics={validation.diagnostics} />
           )}
 
           {tab === 1 && (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                State diagram
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                The diagram will be projected from the parsed `.sm` model via Sprotty + ELK.
-              </Typography>
-            </Box>
-          )}
-
-          {tab === 2 && (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                The model tree (Machine / State / Transition …) will appear here once the text is
-                synced into the structural model.
-              </Typography>
-            </Box>
+            <SmDiagram view={diagramView} onMachineChange={handleMachineChange} />
           )}
         </Paper>
       </Stack>

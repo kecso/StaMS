@@ -16,7 +16,6 @@ const STUDIO_UI_DIR = path.join(ROOT, 'studio-ui');
 const STUDIO_UI_NEXT = path.join(STUDIO_UI_DIR, 'node_modules', 'next');
 const REQUIRED_ARTIFACTS = [
     path.join(ROOT, 'build', 'workers', 'langium.worker.js'),
-    path.join(ROOT, 'build', 'workers', 'elk.worker.js'),
     path.join(ROOT, 'build', 'stams', 'sm-langium.js'),
     path.join(STUDIO_UI_DIR, 'out', 'index.html')
 ];
@@ -45,8 +44,7 @@ if (missingArtifacts.length > 0) {
         console.log('  - ' + path.relative(ROOT, artifact));
     });
     try {
-        run('npm run build', 'built langium parser, workers, and plugins');
-        run('npm run build:ui', 'exported studio UI to studio-ui/out');
+        run('npm run build', 'built langium parser, workers, plugins, and studio UI');
     } catch (err) {
         console.error('[prestart] build failed. /build/workers may 404 until you run "npm run build".');
     }

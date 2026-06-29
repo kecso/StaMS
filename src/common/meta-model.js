@@ -68,7 +68,7 @@ define([], function () {
             {
                 name: 'State',
                 attributes: ['name', 'isInitial', 'isFinal'],
-                children: ['State', 'Transition'],
+                children: [],
                 pointers: { entry: 'Action', run: 'Action', exit: 'Action' },
                 sets: {}
             },
@@ -87,8 +87,7 @@ define([], function () {
             }
         ],
         visualizers: {
-            File: 'MonacoEditor',
-            Machine: 'SprottyDiagram'
+            File: 'MonacoEditor'
         }
     };
 });

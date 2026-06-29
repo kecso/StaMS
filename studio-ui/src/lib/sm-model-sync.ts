@@ -12,6 +12,9 @@ export type ModelSyncResult = {
 
 /**
  * Invoked when editor text is non-empty, error-free, and has been quiet for the debounce window.
+ *
+ * On success, the Diagram tab should subscribe to territory (`gme-territory`) and
+ * build the view with `buildSmDiagramFromClient`.
  */
 export async function syncModelFromText(
   client: GmeClient,

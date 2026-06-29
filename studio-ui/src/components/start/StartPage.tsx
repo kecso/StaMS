@@ -16,10 +16,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import WelcomeHeader from '@/components/start/WelcomeHeader';
 import { useGmeClient } from '@/contexts/GmeClientContext';
-import { createProjectFromSeed } from '@/lib/gme-projects';
+import { createProjectFromSeed, listProjects } from '@/lib/gme-projects';
 import { WORKSPACE_SEED } from '@/lib/project-seeds';
 import { saveDoc } from '@/lib/sm-document';
-import { STUDIO_PATH, getWorkspaceDocName, hasWorkspace, setWorkspace } from '@/lib/workspace';
+import {
+  STUDIO_PATH,
+  clearWorkspace,
+  getWorkspaceDocName,
+  getWorkspaceProjectId,
+  hasWorkspace,
+  setWorkspace
+} from '@/lib/workspace';
 
 function docNameFromFile(filename: string): string {
   const base = filename.replace(/\.sm$/i, '').trim();
@@ -42,8 +49,44 @@ export default function StartPage() {
   const [latestDocName, setLatestDocName] = useState<string | null>(null);
 
   useEffect(() => {
-    setLatestDocName(hasWorkspace() ? getWorkspaceDocName() : null);
-  }, []);
+    if (!hasWorkspace()) {
+      setLatestDocName(null);
+      return;
+    }
+
+    // The stored project id lives in sessionStorage but the server is ephemeral
+    // (in-memory storage + fresh embedded mongo per startup). After a server
+    // restart the id dangles, so verify it still exists before offering "Return".
+    if (state !== 'connected' || !client) {
+      setLatestDocName(getWorkspaceDocName());
+      return;
+    }
+
+    const storedId = getWorkspaceProjectId();
+    let cancelled = false;
+    void listProjects(client)
+      .then((projects) => {
+        if (cancelled) {
+          return;
+        }
+        const stillExists = projects.some((project) => project._id === storedId);
+        if (stillExists) {
+          setLatestDocName(getWorkspaceDocName());
+        } else {
+          clearWorkspace();
+          setLatestDocName(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLatestDocName(getWorkspaceDocName());
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, state]);
 
   const openStudio = useCallback(
     (projectId: string, docName: string, text: string) => {

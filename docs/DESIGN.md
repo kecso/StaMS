@@ -121,7 +121,7 @@ The grammar supports:
 - Top-level imports.
 - Global event and action declarations.
 - Machines with local events/actions.
-- Nested states.
+- Flat states (no nested states within a state).
 - Initial states.
 - Event-triggered transitions.
 - String guards as placeholders.

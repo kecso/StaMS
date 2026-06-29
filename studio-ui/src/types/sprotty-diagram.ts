@@ -8,7 +8,7 @@
 export interface SmDiagramView {
   machines: SmMachineRef[];
   activeMachineId: string;
-  graph: SmMachineGraph;
+  graphsByMachineId: Record<string, SmMachineGraph>;
 }
 
 export interface SmMachineRef {
@@ -22,20 +22,18 @@ export interface SmMachineGraph {
   children: SmDiagramElement[];
 }
 
-export type SmDiagramElement = SmStateNode | SmTransitionEdge | SmCompartmentNode;
+export type SmDiagramElement = SmStateNode | SmTransitionEdge;
 
 export interface SmStateNode {
   type: 'node:state';
   id: string;
   name: string;
-  kind: 'normal' | 'initial' | 'final' | 'composite';
-  parentStateId?: string;
+  kind: 'normal' | 'initial' | 'final';
   entry?: string;
   run?: string;
   exit?: string;
   position?: { x: number; y: number };
   size?: { width: number; height: number };
-  children?: SmDiagramElement[];
 }
 
 export interface SmTransitionEdge {
@@ -48,12 +46,4 @@ export interface SmTransitionEdge {
   action?: string;
   label?: string;
   routingPoints?: Array<{ x: number; y: number }>;
-}
-
-export interface SmCompartmentNode {
-  type: 'node:compartment';
-  id: string;
-  parentStateId: string;
-  bounds?: { x: number; y: number; width: number; height: number };
-  children: SmDiagramElement[];
 }

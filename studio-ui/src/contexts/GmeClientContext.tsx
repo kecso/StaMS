@@ -11,7 +11,7 @@ import {
   type ReactNode
 } from 'react';
 
-import { GME_CLASSES_SCRIPT } from '@/lib/config';
+import { ensureSocketIoGlobal, GME_CLASSES_SCRIPT } from '@/lib/config';
 import type { GmeClient } from '@/types/gme-global';
 
 type ConnectionState = 'loading' | 'connected' | 'error';
@@ -83,14 +83,19 @@ function createAndConnectClient(): Promise<GmeClient> {
         const client = new window.GME.classes.Client(window.GME.gmeConfig);
         client.mountedPath = '';
 
-        client.connectToDatabase((err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          window.gmeClient = client;
-          resolve(client);
-        });
+        // socket.io must expose window.io before connect (see ensureSocketIoGlobal).
+        ensureSocketIoGlobal()
+          .then(() => {
+            client.connectToDatabase((err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              window.gmeClient = client;
+              resolve(client);
+            });
+          })
+          .catch(reject);
       } catch (connectError) {
         reject(connectError instanceof Error ? connectError : new Error('Failed to create GME client'));
       }

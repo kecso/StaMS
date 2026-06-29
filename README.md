@@ -66,8 +66,8 @@ npm run start:server    # WebGME API on :8888 (embedded Mongo by default)
 | Command | What it builds |
 |---------|----------------|
 | `npm run setup` | Install all deps + full build (first-time setup) |
-| `npm run build` | Langium parser + web workers + plugins (everything the server serves) |
-| `npm run build:all` | `build` plus the Next.js studio UI |
+| `npm run build` | Langium parser + workers + plugins + studio UI (`studio-ui/out`) |
+| `npm run build:all` | Same as `npm run build` |
 | `npm run build:langium` | Langium parser/AST from the grammar |
 | `npm run build:workers` | Webpack bundles for `langium.worker` and `elk.worker` |
 | `npm run build:plugins` | Rollup bundles for plugins (for future TS plugins) |
@@ -112,8 +112,8 @@ Tracked in `docs/DESIGN.md` §11 — Foundation (this bootstrap) → Monaco → 
 | `npm start` | **Studio UI (:4000) + WebGME API (:8888)** — normal way to run StaMS |
 | `npm run start:server` | WebGME API only (plugins, tests, CLI; embedded Mongo unless `STAMS_MONGO_URI` set) |
 | `npm run dev` | Alias for `npm start` |
-| `npm run build` | Langium parser + workers + plugins |
-| `npm run build:all` | `build` + Next.js production UI |
+| `npm run build` | Langium parser + workers + plugins + studio UI |
+| `npm run build:all` | Same as `npm run build` |
 | `npm run plugin -- ...` | Run a plugin from CLI |
 | `npm run seed` | Seed export instructions |
 

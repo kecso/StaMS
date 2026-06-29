@@ -20,9 +20,36 @@ define([
     TextToModel.prototype = Object.create(PluginBase.prototype);
     TextToModel.prototype.constructor = TextToModel;
 
+    // Cross-references are guaranteed linked here: main() fails earlier on any
+    // error-severity diagnostic (which includes Langium linking errors), so a
+    // present optional reference always has a resolved `.ref`.
+    function refName(ref) {
+        return ref ? ref.ref.name : undefined;
+    }
+
+    function optionalPointer(core, node, pointerName, target) {
+        if (target) {
+            core.setPointer(node, pointerName, target);
+        }
+    }
+
+    function metaTypeName(core, node) {
+        var metaNode = node ? core.getMetaType(node) : null;
+        return metaNode ? core.getAttribute(metaNode, 'name') : null;
+    }
+
+    function removeDirectMachineChildren(core, rootNode) {
+        return core.loadChildren(rootNode).then(function (children) {
+            children.forEach(function (child) {
+                if (metaTypeName(core, child) === 'Machine') {
+                    core.deleteNode(child);
+                }
+            });
+        });
+    }
+
     /**
-     * Parse `.sm` text from plugin config (Langium) and traverse the AST.
-     * GME node creation / incremental diff is the next step after this parse pass.
+     * Parse `.sm` text from plugin config (Langium) and build flat Machine subgraphs.
      */
     TextToModel.prototype.main = function (callback) {
         var self = this,
@@ -40,7 +67,7 @@ define([
         }
 
         function fail(message) {
-            self.createMessage(self.MESSAGE_TYPES.error, message);
+            self.createMessage(null, message, 'error');
             callback(new Error(message), self.result);
         }
 
@@ -53,12 +80,11 @@ define([
 
         SmLangium.parseSm(content, 'memory:///document.sm')
             .then(function (parsed) {
-                var summary = SmLangium.summarizeModel(parsed.model, parsed.diagnostics);
-
                 if (SmLangium.hasSyntaxErrors(parsed.document)) {
                     self.createMessage(
-                        self.MESSAGE_TYPES.error,
-                        'Syntax errors:\n' + SmLangium.formatSyntaxErrors(parsed.document)
+                        null,
+                        'Syntax errors:\n' + SmLangium.formatSyntaxErrors(parsed.document),
+                        'error'
                     );
                     fail('Langium reported syntax errors');
                     return;
@@ -66,44 +92,92 @@ define([
 
                 if (SmLangium.hasParseErrors(parsed.diagnostics)) {
                     self.createMessage(
-                        self.MESSAGE_TYPES.warning,
-                        'Validation issues:\n' + SmLangium.formatDiagnostics(parsed.diagnostics)
+                        null,
+                        'Validation/linking errors:\n' + SmLangium.formatDiagnostics(parsed.diagnostics),
+                        'error'
                     );
+                    fail('Langium reported validation/linking errors');
+                    return;
                 }
 
-                // Traverse linked AST — hook GME sync in handlers below.
-                SmLangium.traverseModel(parsed.model, {
-                    onMachine: function (machine) {
-                        self.logger.debug('machine: ' + machine.name);
-                    },
-                    onState: function (state, machine) {
-                        self.logger.debug(
-                            'state: ' + machine.name + '.' + state.name +
-                            (state.isInitial ? ' (initial)' : '') +
-                            (state.isFinal ? ' (final)' : '')
-                        );
-                    },
-                    onTransition: function (transition, source, machine) {
-                        var eventName = transition.event.ref ? transition.event.ref.name : '?';
-                        var targetName = transition.target.ref ? transition.target.ref.name : '?';
-                        self.logger.debug(
-                            'transition: ' + machine.name + '.' + source.name +
-                            ' --' + eventName + '--> ' + targetName
-                        );
-                    }
+                return removeDirectMachineChildren(core, self.rootNode).then(function () {
+                    buildMachines(parsed);
+                    self.save('text-to-model', finish);
                 });
-
-                self.logger.info(
-                    'TextToModel parsed textLength=' + content.length +
-                    ', ast=' + JSON.stringify(summary)
-                );
-
-                // TODO: map parsed.model → create/update Machine/State/Transition nodes via core
-                self.save('text-to-model', finish);
             })
             .catch(function (err) {
-                fail(err && err.message ? err.message : 'Langium parse failed');
+                self.logger.error('TextToModel failed: ' + (err && err.stack ? err.stack : err));
+                fail(err && err.message ? err.message : 'TextToModel failed');
             });
+
+        function buildMachines(parsed) {
+            parsed.model.machines.forEach(function (machine) {
+                    var actions = {},
+                        states = {},
+                        events = {},
+                        guards = {},
+                        machineNode = self.core.createNode({parent: self.rootNode, base: self.META['Machine']});
+
+                    self.core.setAttribute(machineNode, 'name', machine.name);
+
+                    machine.variablesBlock?.variables.forEach(function (variable) {
+                        var variableNode = self.core.createNode({parent: machineNode, base: self.META['Variable']});
+                        self.core.setAttribute(variableNode, 'name', variable.name);
+                        self.core.setAttribute(variableNode, 'type', variable.type);
+                        if (variable.init) {
+                            self.core.setAttribute(variableNode, 'initExpr', String(variable.init));
+                        }
+                    });
+
+                    machine.eventsBlock?.events.forEach(function (event) {
+                        var eventNode = self.core.createNode({parent: machineNode, base: self.META['Event']});
+                        self.core.setAttribute(eventNode, 'name', event.name);
+                        events[event.name] = eventNode;
+                    });
+
+                    machine.actionsBlock?.actions.forEach(function (action) {
+                        var actionNode = self.core.createNode({parent: machineNode, base: self.META['Action']});
+                        self.core.setAttribute(actionNode, 'name', action.name);
+                        actions[action.name] = actionNode;
+                    });
+
+                    machine.guardsBlock?.guards.forEach(function (guard) {
+                        var guardNode = self.core.createNode({parent: machineNode, base: self.META['Guard']});
+                        self.core.setAttribute(guardNode, 'name', guard.name);
+                        guards[guard.name] = guardNode;
+                    });
+
+                    machine.constraintsBlock?.constraints.forEach(function (constraint) {
+                        var constraintNode = self.core.createNode({parent: machineNode, base: self.META['Constraint']});
+                        self.core.setAttribute(constraintNode, 'name', constraint.name);
+                        self.core.setAttribute(constraintNode, 'kind', constraint.kind);
+                    });
+
+                    machine.states.forEach(function (state) {
+                        var stateNode = self.core.createNode({parent: machineNode, base: self.META['State']});
+                        self.core.setAttribute(stateNode, 'name', state.name);
+                        self.core.setAttribute(stateNode, 'isInitial', !!state.isInitial);
+                        self.core.setAttribute(stateNode, 'isFinal', !!state.isFinal);
+                        optionalPointer(core, stateNode, 'entry', actions[refName(state.entry)]);
+                        optionalPointer(core, stateNode, 'run', actions[refName(state.run)]);
+                        optionalPointer(core, stateNode, 'exit', actions[refName(state.exit)]);
+                        states[state.name] = stateNode;
+                    });
+
+                    machine.states.forEach(function (state) {
+                        var stateNode = states[state.name];
+                        state.transitions.forEach(function (transition) {
+                            var transitionNode = self.core.createNode({parent: machineNode, base: self.META['Transition']}),
+                                targetName = refName(transition.target);
+                            self.core.setPointer(transitionNode, 'src', stateNode);
+                            self.core.setPointer(transitionNode, 'dst', states[targetName]);
+                            optionalPointer(core, transitionNode, 'event', events[refName(transition.event)]);
+                            optionalPointer(core, transitionNode, 'guard', guards[refName(transition.guard)]);
+                            optionalPointer(core, transitionNode, 'action', actions[refName(transition.action)]);
+                        });
+                    });
+                });
+        }
     };
 
     TextToModel.configStructure = pluginMetadata.configStructure;

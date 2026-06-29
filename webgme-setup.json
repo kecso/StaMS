@@ -38,13 +38,6 @@
         "panel": "src/visualizers/panels/MonacoEditor",
         "secondary": false,
         "widget": "src/visualizers/widgets/MonacoEditor"
-      },
-      "SprottyDiagram": {
-        "src": "panels/SprottyDiagram/SprottyDiagramPanel",
-        "title": "State Diagram",
-        "panel": "src/visualizers/panels/SprottyDiagram",
-        "secondary": false,
-        "widget": "src/visualizers/widgets/SprottyDiagram"
       }
     },
     "routers": {

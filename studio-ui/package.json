@@ -17,10 +17,15 @@
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
     "@mui/material-nextjs": "^6.4.8",
+    "elkjs": "^0.9.3",
+    "inversify": "^6.2.2",
     "monaco-editor": "^0.55.1",
     "next": "^15.2.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "reflect-metadata": "^0.2.2",
+    "sprotty": "^1.4.0",
+    "sprotty-elk": "^1.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

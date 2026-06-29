@@ -47,7 +47,7 @@ export type SmTraverseHandlers = {
     onAction?: (action: ActionDecl, machine: Machine) => void;
     onGuard?: (guard: GuardDecl, machine: Machine) => void;
     onConstraint?: (constraint: ConstraintDecl, machine: Machine) => void;
-    onState?: (state: State, machine: Machine, parent?: State) => void;
+    onState?: (state: State, machine: Machine) => void;
     onTransition?: (transition: Transition, source: State, machine: Machine) => void;
 };
 
@@ -78,11 +78,12 @@ export function getLangiumServices(): StateMachineServices {
  */
 export async function parseSm(text: string, documentUri = 'memory:///document.sm'): Promise<ParseSmResult> {
     const sm = getLangiumServices();
-    const document = sm.shared.workspace.LangiumDocumentFactory.fromString<Model>(
-        text,
-        URI.parse(documentUri)
-    );
-    sm.shared.workspace.LangiumDocuments.addDocument(document);
+    const uri = URI.parse(documentUri);
+    const documents = sm.shared.workspace.LangiumDocuments;
+    documents.deleteDocument(uri);
+
+    const document = sm.shared.workspace.LangiumDocumentFactory.fromString<Model>(text, uri);
+    documents.addDocument(document);
     await sm.shared.workspace.DocumentBuilder.build([document], { validation: true });
 
     const model = document.parseResult.value;
@@ -128,7 +129,7 @@ export function formatDiagnostics(diagnostics: Diagnostic[]): string {
         .join('\n');
 }
 
-/** Walk machines, nested states, and transitions in document order. */
+/** Walk machines, states, and transitions in document order. */
 export function traverseModel(model: Model, handlers: SmTraverseHandlers): void {
     model.machines.forEach((machine) => {
         handlers.onMachine?.(machine);
@@ -149,22 +150,12 @@ export function traverseModel(model: Model, handlers: SmTraverseHandlers): void 
             handlers.onConstraint?.(constraint, machine);
         });
 
-        traverseStates(machine.states, machine, undefined, handlers);
-    });
-}
-
-function traverseStates(
-    states: State[],
-    machine: Machine,
-    parent: State | undefined,
-    handlers: SmTraverseHandlers
-): void {
-    states.forEach((state) => {
-        handlers.onState?.(state, machine, parent);
-        state.transitions.forEach((transition) => {
-            handlers.onTransition?.(transition, state, machine);
+        machine.states.forEach((state) => {
+            handlers.onState?.(state, machine);
+            state.transitions.forEach((transition) => {
+                handlers.onTransition?.(transition, state, machine);
+            });
         });
-        traverseStates(state.states, machine, state, handlers);
     });
 }
 

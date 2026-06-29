@@ -45,6 +45,7 @@ export default function ProjectListPanel({ projects }: ProjectListPanelProps) {
           key={project._id}
           component={Link}
           href={STUDIO_PATH}
+          prefetch={false}
           sx={{
             border: 1,
             borderColor: 'divider',

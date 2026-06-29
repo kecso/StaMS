@@ -1,0 +1,82 @@
+/* Styling for the StaMS Sprotty diagram. Sprotty emits `sprotty-node` on node
+   shapes, `sprotty-edge` on edge groups, `sprotty-label` on label text, and copies
+   element `cssClasses` (e.g. `sm-state-initial`) onto the rendered group. */
+
+/* IMPORTANT — font metrics are intentionally NOT scoped to #sprotty-sm.
+   Sprotty measures every label with getBBox() inside a hidden div that it appends
+   to <body> as #sprotty-hidden (NOT inside #sprotty-sm). ELK then lays out using
+   those measured sizes. If the font here differed from the rendered font, labels
+   would be clipped or mis-centered. We also deliberately do NOT set text-anchor or
+   dominant-baseline: Sprotty centers labels inside nodes via its stack layout +
+   alignment (computed from the measured bbox), and overriding the anchor only at
+   render time — not during the hidden measurement — is exactly what pushed the
+   first character outside the state box. */
+.sprotty-label {
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
+  font-size: 13px;
+}
+
+/* Transition labels are captions — keep them small. Descendant selector so it
+   never matches the state label living under .sprotty-node. */
+.sprotty-edge .sprotty-label {
+  font-size: 9px;
+}
+
+#sprotty-sm {
+  width: 100%;
+  height: 100%;
+}
+
+#sprotty-sm svg.sprotty-graph {
+  width: 100%;
+  height: 100%;
+  --sm-node-fill: #2d5a87;
+  --sm-node-stroke: #8ec8ff;
+  --sm-edge-stroke: #b0c4de;
+}
+
+#sprotty-sm .sprotty-node {
+  fill: var(--sm-node-fill);
+  stroke: var(--sm-node-stroke);
+  stroke-width: 2;
+  rx: 6;
+  ry: 6;
+}
+
+#sprotty-sm .sm-state-initial .sprotty-node {
+  stroke: #4caf50;
+  stroke-width: 3;
+}
+
+#sprotty-sm .sm-state-final .sprotty-node {
+  stroke: #ff9800;
+  stroke-width: 3;
+}
+
+/* Colors only — these never affect geometry, so they stay scoped to the visible
+   diagram. State labels are white on the node fill. */
+#sprotty-sm .sprotty-label {
+  fill: #ffffff;
+}
+
+#sprotty-sm .sprotty-edge {
+  fill: none;
+  stroke: var(--sm-edge-stroke);
+  stroke-width: 2;
+}
+
+#sprotty-sm .sprotty-edge > path {
+  marker-end: url(#sm-arrowhead);
+}
+
+/* Transition labels: black text with a white halo (paint-order: stroke draws the
+   stroke behind the fill) so they read clearly against both the canvas and any
+   edge they sit on. getBBox() ignores stroke, so the halo doesn't disturb the
+   ELK layout. */
+#sprotty-sm .sprotty-edge .sprotty-label {
+  fill: #000000;
+  stroke: #ffffff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}

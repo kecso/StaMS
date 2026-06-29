@@ -4,8 +4,7 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        'langium.worker': './src/visualizers/widgets/MonacoEditor/langium.worker.ts',
-        'elk.worker': './src/visualizers/widgets/SprottyDiagram/elk.worker.ts'
+        'langium.worker': './src/visualizers/widgets/MonacoEditor/langium.worker.ts'
     },
     output: {
         path: path.resolve(__dirname, 'build/workers'),

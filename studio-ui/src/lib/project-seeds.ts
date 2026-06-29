@@ -10,8 +10,8 @@ export type ProjectSeedTemplate = {
 export const WORKSPACE_SEED: ProjectSeedTemplate = {
   id: 'workspace',
   title: 'State Machine',
-  description: 'In-memory StaMS workspace (EmptyProject seed).',
-  seedName: 'EmptyProject',
+  description: 'In-memory StaMS workspace (StateMachine seed with full meta-model).',
+  seedName: 'StateMachine',
   defaultName: 'machine',
   accent: '#3d8fd1'
 };

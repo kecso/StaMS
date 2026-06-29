@@ -15,8 +15,8 @@
     "dev:ui": "concurrently --kill-others-on-fail -n api,studio -c blue,green \"npm run start:server\" \"npm run start:ui:dev\"",
     "start:server": "node app.js",
     "start:ui:dev": "npm run dev --prefix studio-ui",
-    "build": "npm run build:langium && npm run build:workers && npm run build:plugins",
-    "build:all": "npm run build && npm run build:ui",
+    "build": "npm run build:langium && npm run build:workers && npm run build:plugins && npm run build:ui",
+    "build:all": "npm run build",
     "build:langium": "langium generate",
     "build:workers": "webpack --mode production --env skipLangiumCheck",
     "build:plugins": "rollup -c rollup.config.mjs",
@@ -33,7 +33,8 @@
     "pluginHook": "node ./node_modules/webgme-engine/src/bin/plugin_hook.js",
     "users": "node ./node_modules/webgme-engine/src/bin/usermanager.js",
     "clean_up": "node ./node_modules/webgme-engine/src/bin/clean_up.js",
-    "seed": "node scripts/build-seed.js"
+    "seed": "node scripts/build-seed.js",
+    "parse:sm": "node scripts/parse-sm.js"
   },
   "peerDependencies": {
     "webgme": "^2.23.0"
@@ -58,13 +59,10 @@
   },
   "dependencies": {
     "archiver": "^7.0.1",
-    "elkjs": "^0.9.3",
     "langium": "^3.5.0",
     "monaco-editor": "^0.52.2",
     "monaco-languageclient": "^9.5.0",
     "mongodb-memory-server": "^10.4.3",
-    "sprotty": "^1.4.0",
-    "sprotty-elk": "^1.4.0",
     "vscode-jsonrpc": "^8.2.0",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-ws-jsonrpc": "^3.4.0"

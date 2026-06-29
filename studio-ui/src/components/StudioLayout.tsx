@@ -35,6 +35,7 @@ export default function StudioLayout({
                   key={index}
                   component={Link}
                   href={crumb.href}
+                  prefetch={false}
                   underline="hover"
                   color="inherit"
                 >

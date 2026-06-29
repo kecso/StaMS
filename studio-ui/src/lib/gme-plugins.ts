@@ -1,5 +1,7 @@
 import type { GmeClient } from '@/types/gme-global';
 
+import { PROJECT_ROOT } from '@/lib/sm-diagram-from-client';
+
 export type PluginRunResult = {
   success: boolean;
   messages?: Array<{ severity: string; message: string }>;
@@ -12,8 +14,8 @@ type ServerPluginResult = {
   error?: string;
 };
 
-/** WebGME project root node path for EmptyProject / fresh seeds. */
-const DEFAULT_ACTIVE_NODE = '/1';
+/** WebGME project root — TextToModel writes Machine nodes here (not under /1 FCO). */
+const DEFAULT_ACTIVE_NODE = PROJECT_ROOT;
 
 /**
  * Run a server-side WebGME plugin on the active project branch.

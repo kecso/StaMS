@@ -15,7 +15,7 @@ export function registerValidationChecks(services: StateMachineServices): void {
 
 export class StateMachineValidator {
     checkMachine(machine: Machine, accept: ValidationAcceptor): void {
-        const initialStates = collectStates(machine.states).filter((state) => state.isInitial);
+        const initialStates = machine.states.filter((state) => state.isInitial);
         if (initialStates.length === 0) {
             accept('error', 'Machine must declare exactly one initial state.', {
                 node: machine,
@@ -29,7 +29,7 @@ export class StateMachineValidator {
         }
 
         const stateNames = new Set<string>();
-        collectStates(machine.states).forEach((state) => {
+        machine.states.forEach((state) => {
             if (stateNames.has(state.name)) {
                 accept('error', `Duplicate state name "${state.name}".`, {
                     node: state,
@@ -48,13 +48,4 @@ export class StateMachineValidator {
             });
         }
     }
-}
-
-function collectStates(states: State[]): State[] {
-    const found: State[] = [];
-    states.forEach((state) => {
-        found.push(state);
-        found.push(...collectStates(state.states));
-    });
-    return found;
 }

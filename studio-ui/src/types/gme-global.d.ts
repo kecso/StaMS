@@ -50,15 +50,32 @@ export type GmeClient = {
   updateTerritory: (uiId: string, patterns: Record<string, { children: number }>) => void;
   removeUI: (uiId: string) => void;
   getNode: (path: string) => GmeClientNode | null;
-  CONSTANTS?: Record<string, string>;
+  getAllMetaNodes?: (asObject?: boolean) => Record<string, GmeClientNode> | GmeClientNode[];
+  CONSTANTS?: {
+    TERRITORY_EVENT_LOAD?: string;
+    TERRITORY_EVENT_UPDATE?: string;
+    TERRITORY_EVENT_UNLOAD?: string;
+    TERRITORY_EVENT_COMPLETE?: string;
+    TERRITORY_EVENT_INCOMPLETE?: string;
+    NEW_COMMIT_STATE?: string;
+    [key: string]: string | undefined;
+  };
   addEventListener?: (event: string, handler: (...args: unknown[]) => void) => void;
   removeEventListener?: (event: string, handler: (...args: unknown[]) => void) => void;
 };
 
 export type GmeClientNode = {
   getId: () => string;
-  getAttribute: (name: string) => string;
+  getAttribute: (name: string) => string | boolean | number | undefined;
+  getAttributeNames?: () => string[];
   getChildrenIds: () => string[];
+  getMetaTypeId?: () => string;
+  getPointerNames?: () => string[];
+  getPointer?: (pointerName: string) => { to: string | null; from: string[] };
+  getPointerId?: (pointerName: string) => string | null;
+  getParentId?: () => string | null;
+  isInstanceOf?: (baseId: string) => boolean;
+  isTypeOf?: (typeId: string) => boolean;
 };
 
 export type GmeProjectRecord = {
