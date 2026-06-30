@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "io.stams.studio",
+  "productName": "StaMS",
+  "copyright": "Copyright © StaMS contributors",
+  "directories": {
+    "output": "dist/desktop",
+    "buildResources": "desktop/resources"
+  },
+  "files": [
+    "app.js",
+    "config/**/*",
+    "src/**/*",
+    "build/**/*",
+    "studio-ui/out/**/*",
+    "scripts/ensure-build.js",
+    "webgme-setup.json",
+    "package.json",
+    "desktop/main.js",
+    "node_modules/**/*"
+  ],
+  "asar": true,
+  "extraMetadata": {
+    "main": "desktop/main.js"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "mac": {
+    "category": "public.app-category.developer-tools",
+    "target": ["dmg"]
+  },
+  "linux": {
+    "target": ["AppImage"],
+    "category": "Development"
+  },
+  "portable": {
+    "artifactName": "${productName}-${version}-portable.${ext}"
+  }
+}

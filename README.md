@@ -27,7 +27,14 @@ See `docs/DESIGN.md` for the full design document.
 ## Prerequisites
 
 - Node.js ≥ 20
-- No external MongoDB required for normal use — StaMS starts a private ephemeral `mongod` on a random port (via `mongodb-memory-server`) because webgme-engine's GmeAuth still requires MongoDB even when model storage is `memory`. Set `STAMS_MONGO_URI` to use your own MongoDB instead.
+- A sibling checkout of [webgme-engine](https://github.com/webgme/webgme-engine) on **`master`** (includes MemoryGMEAuth). StaMS links it via `file:../webgme-engine` — pull engine `master` when you want updates, then `npm install` in StaMS if needed.
+- **No MongoDB** — model/commits and auth/metadata are fully in-memory (`storage.database.type = memory` + `MemoryGMEAuth`). `.sm` files are the durable exchange format. A backend restart clears projects; the studio detects this via `GET /api/stams/session` (`bootId`) and wipes stale browser cache automatically.
+
+```bash
+# one-time, next to the StaMS clone
+git clone https://github.com/webgme/webgme-engine.git ../webgme-engine
+cd ../webgme-engine && git checkout master
+```
 
 ## Quick start
 
@@ -49,7 +56,16 @@ Open **http://localhost:8888** — that is the main interface.
 `npm start` runs a `prestart` guard that installs `studio-ui` dependencies if needed
 and builds worker bundles when missing, so a fresh checkout works after `npm run setup`.
 
-**Runtime:** `npm start` runs a single WebGME server on `:8888` with an embedded MongoDB for auth/metadata (random port, discarded on exit). Model data uses in-memory storage. For an external MongoDB, set `STAMS_MONGO_URI` (e.g. `mongodb://127.0.0.1:27017/stams`).
+**Runtime:** `npm start` runs a single in-memory WebGME server on `:8888` (no external database).
+
+### Desktop app
+
+```bash
+npm run desktop:start    # Electron window + in-memory backend
+npm run desktop:build    # Portable .exe (Windows) / .dmg / .AppImage → dist/desktop/
+```
+
+See `desktop/README.md` for details.
 
 ### Backend only
 
@@ -110,12 +126,14 @@ Tracked in `docs/DESIGN.md` §11 — Foundation (this bootstrap) → Monaco → 
 |---------|-------------|
 | `npm run setup` | First-time install + full build |
 | `npm start` | **Studio UI (:4000) + WebGME API (:8888)** — normal way to run StaMS |
-| `npm run start:server` | WebGME API only (plugins, tests, CLI; embedded Mongo unless `STAMS_MONGO_URI` set) |
+| `npm run start:server` | WebGME API only (plugins, tests, CLI) |
 | `npm run dev` | Alias for `npm start` |
 | `npm run build` | Langium parser + workers + plugins + studio UI |
 | `npm run build:all` | Same as `npm run build` |
 | `npm run plugin -- ...` | Run a plugin from CLI |
 | `npm run seed` | Seed export instructions |
+| `npm run desktop:start` | Native desktop shell (Electron + embedded backend) |
+| `npm run desktop:build` | Build portable desktop installer |
 
 ## License
 

@@ -34,7 +34,10 @@
     "users": "node ./node_modules/webgme-engine/src/bin/usermanager.js",
     "clean_up": "node ./node_modules/webgme-engine/src/bin/clean_up.js",
     "seed": "node scripts/build-seed.js",
-    "parse:sm": "node scripts/parse-sm.js"
+    "parse:sm": "node scripts/parse-sm.js",
+    "desktop:start": "electron desktop/main.js",
+    "desktop:smoke": "node desktop/smoke-test.js",
+    "desktop:build": "npm run build && electron-builder --config electron-builder.json"
   },
   "peerDependencies": {
     "webgme": "^2.23.0"
@@ -55,19 +58,22 @@
     "webgme": "^2.49.0",
     "webgme-cli": "^2.8.5",
     "webpack": "^5.99.7",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "electron": "^35.1.5",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
     "archiver": "^7.0.1",
     "langium": "^3.5.0",
     "monaco-editor": "^0.52.2",
     "monaco-languageclient": "^9.5.0",
-    "mongodb-memory-server": "^10.4.3",
     "vscode-jsonrpc": "^8.2.0",
     "vscode-languageserver-protocol": "^3.17.5",
-    "vscode-ws-jsonrpc": "^3.4.0"
+    "vscode-ws-jsonrpc": "^3.4.0",
+    "webgme-engine": "file:../webgme-engine"
   },
   "overrides": {
-    "vscode-jsonrpc": "^8.2.0"
+    "vscode-jsonrpc": "^8.2.0",
+    "webgme-engine": "$webgme-engine"
   }
 }

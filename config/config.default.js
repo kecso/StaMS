@@ -4,22 +4,18 @@ var path = require('path'),
     config = require('./config.webgme'),
     validateConfig = require('webgme/config/validator');
 
-config.server.port = 8888;
+config.server.port = Number(process.env.STAMS_PORT) || 8888;
 
-// Model/commit storage: in-memory for this session (see storage.database.type below).
-// GmeAuth + project metadata still use MongoDB today; app.js starts an embedded
-// mongod on a random port unless STAMS_MONGO_URI points at an external instance.
-config.mongo.uri = 'mongodb://127.0.0.1:27017/stams';
-
-// Ephemeral workspace: projects live in RAM for the session. `.sm` files (and
-// import/export) are the durable exchange format — no MongoDB needed at runtime.
+// Fully in-memory deployment: model/commits + auth/metadata via MemoryGMEAuth.
+// No MongoDB (external or embedded) is required. `.sm` files are the durable format.
 config.storage.database.type = 'memory';
+config.authentication.enable = false;
+config.authentication.gmeAuth = {
+    path: require('./memory-auth').memoryGmeAuthPath()
+};
 
 config.plugin.allowServerExecution = true;
 config.plugin.allowBrowserExecution = false;
-
-// Single implicit workspace user; no login or user-management UI.
-config.authentication.enable = false;
 
 // Prefer the custom React studio over the stock WebGME UI for day-to-day work.
 config.client.pageTitle = 'StaMS — State Machine Studio';

@@ -143,10 +143,9 @@ export default function StudioPage() {
         if (cancelled) {
           return;
         }
-        // The project is gone (e.g. server restarted — model storage is in-memory
-        // and the embedded mongo is ephemeral). Stop the client from watching the
-        // dead project (otherwise it keeps re-joining the missing room on every
-        // reconnect, spamming "no such project" on the server), clear the stale
+        // The project is gone (e.g. server restarted — storage is in-memory).
+        // Stop the client from watching the dead project (otherwise it keeps
+        // re-joining the missing room on every reconnect), clear the stale
         // workspace, and return to the start page.
         void closeProject(client).catch(() => undefined);
         clearWorkspace();

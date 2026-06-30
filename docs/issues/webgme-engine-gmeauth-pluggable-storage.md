@@ -88,7 +88,7 @@ const gmeAuth = new GmeAuth(metadataStorage, gmeConfig);
 
 ## Workaround today (StaMS)
 
-StaMS uses [`mongodb-memory-server`](https://github.com/nodkz/mongodb-memory-server) to spawn a **private ephemeral `mongod` on a random port** before `standaloneServer.start()`. This avoids colliding with a system MongoDB on `:27017`, but it is still a real MongoDB binary — not true in-engine memory metadata storage.
+Resolved in webgme-engine [#366](https://github.com/webgme/webgme-engine/pull/366): StaMS sets `config.authentication.gmeAuth.path` to `memorygmeauth` alongside `storage.database.type = memory` and `authentication.enable = false`. No MongoDB process is started.
 
 ## References
 

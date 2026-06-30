@@ -20,9 +20,6 @@ describe('ModelToVerification plugin', function () {
         commitHash;
 
     before(function (done) {
-        if (process.env.TEST_MONGO_URI) {
-            gmeConfig.mongo.uri = process.env.TEST_MONGO_URI;
-        }
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
             .then(function (gmeAuth_) {
                 gmeAuth = gmeAuth_;

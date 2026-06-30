@@ -39,7 +39,7 @@ function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('SmParse');
 
     router.get('/session', function (req, res) {
-        // The server uses in-memory model storage and embedded Mongo by default.
+        // The server uses in-memory model storage and MemoryGMEAuth by default.
         // A process restart invalidates every browser-side project id, so expose a
         // per-process id that the studio can compare against its cached state.
         res.set('Cache-Control', 'no-store');

@@ -39,6 +39,7 @@ tmp-seed.zip
 test-tmp/
 blob-local-storage/
 build/
+dist/
 studio-ui/.next/
 studio-ui/out/
 studio-ui/node_modules/

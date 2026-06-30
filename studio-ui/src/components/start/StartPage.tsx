@@ -55,8 +55,8 @@ export default function StartPage() {
     }
 
     // The stored project id lives in sessionStorage but the server is ephemeral
-    // (in-memory storage + fresh embedded mongo per startup). After a server
-    // restart the id dangles, so verify it still exists before offering "Return".
+    // (fully in-memory backend). After a server restart, cached project ids are stale,
+    // so verify the project still exists before offering "Return".
     if (state !== 'connected' || !client) {
       setLatestDocName(getWorkspaceDocName());
       return;
