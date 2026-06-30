@@ -37,7 +37,7 @@
     "parse:sm": "node scripts/parse-sm.js",
     "desktop:start": "electron desktop/main.js",
     "desktop:smoke": "node desktop/smoke-test.js",
-    "desktop:build": "npm run build && electron-builder --config electron-builder.json"
+    "desktop:build": "npm run build && node scripts/prepare-desktop.js && electron-builder --config electron-builder.json"
   },
   "peerDependencies": {
     "webgme": "^2.23.0"
@@ -64,9 +64,8 @@
   },
   "dependencies": {
     "archiver": "^7.0.1",
+    "azure-ad-verify-token-commonjs": "^2.0.2",
     "langium": "^3.5.0",
-    "monaco-editor": "^0.52.2",
-    "monaco-languageclient": "^9.5.0",
     "vscode-jsonrpc": "^8.2.0",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-ws-jsonrpc": "^3.4.0",

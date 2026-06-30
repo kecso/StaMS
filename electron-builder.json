@@ -7,6 +7,9 @@
     "output": "dist/desktop",
     "buildResources": "desktop/resources"
   },
+  "npmRebuild": false,
+  "nodeGypRebuild": false,
+  "buildDependenciesFromSource": false,
   "files": [
     "app.js",
     "config/**/*",
@@ -17,6 +20,12 @@
     "webgme-setup.json",
     "package.json",
     "desktop/main.js",
+    "!**/node_modules/@codingame/**",
+    "!**/node_modules/monaco-languageclient/**",
+    "!**/node_modules/monaco-editor/**",
+    "!**/node_modules/electron/**",
+    "!**/node_modules/electron-builder/**",
+    "!**/node_modules/.cache/**",
     "node_modules/**/*"
   ],
   "asar": true,

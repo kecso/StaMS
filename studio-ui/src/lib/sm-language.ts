@@ -34,7 +34,7 @@ const KEYWORDS = [
 const TYPE_KEYWORDS = ['float', 'string'];
 
 export function registerSmLanguage(monaco: Monaco): void {
-  const existing = monaco.languages.getLanguages().some((lang) => lang.id === SM_LANGUAGE_ID);
+  const existing = monaco.languages.getLanguages().some((lang: { id: string }) => lang.id === SM_LANGUAGE_ID);
   if (existing) {
     return;
   }
