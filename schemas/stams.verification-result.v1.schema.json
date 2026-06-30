@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stams.verification-result.v1",
+  "title": "StaMS verification result",
+  "description": "Outcome of checking constraints against a model and optional trace.",
+  "type": "object",
+  "required": ["$schema", "version", "machine", "results"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "stams.verification-result.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "machine": { "type": "string", "minLength": 1 },
+    "trace": { "$ref": "stams.trace.v1" },
+    "results": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/constraintResult" }
+    }
+  },
+  "$defs": {
+    "constraintResult": {
+      "type": "object",
+      "required": ["name", "kind", "passed"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["safety", "goal"] },
+        "passed": { "type": "boolean" },
+        "message": { "type": "string" },
+        "counterexample": { "$ref": "stams.trace.v1" }
+      }
+    }
+  }
+}

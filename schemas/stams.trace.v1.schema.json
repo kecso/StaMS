@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stams.trace.v1",
+  "title": "StaMS execution trace",
+  "description": "Step-by-step simulation trace shared by client replay and server verification.",
+  "type": "object",
+  "required": ["$schema", "version", "machine", "initial", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "stams.trace.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "machine": { "type": "string", "minLength": 1 },
+    "initial": { "$ref": "#/$defs/snapshot" },
+    "steps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "required": ["state", "variables"],
+      "additionalProperties": false,
+      "properties": {
+        "state": { "type": "string", "minLength": 1 },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["number", "string", "boolean", "null"]
+          }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["index", "event", "before", "after", "guardPassed"],
+      "additionalProperties": false,
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "event": { "type": "string", "minLength": 1 },
+        "transition": {
+          "type": ["object", "null"],
+          "required": ["id", "source", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string" },
+            "source": { "type": "string" },
+            "target": { "type": "string" },
+            "guard": { "type": ["string", "null"] },
+            "action": { "type": ["string", "null"] }
+          }
+        },
+        "guardPassed": { "type": "boolean" },
+        "before": { "$ref": "#/$defs/snapshot" },
+        "after": { "$ref": "#/$defs/snapshot" },
+        "effects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/effect" }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "required": ["phase", "action"],
+      "additionalProperties": false,
+      "properties": {
+        "phase": { "enum": ["exit", "transition", "entry"] },
+        "action": { "type": "string" },
+        "assignments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["target", "before", "after"],
+            "additionalProperties": false,
+            "properties": {
+              "target": { "type": "string" },
+              "before": { "type": ["number", "string", "boolean", "null"] },
+              "after": { "type": ["number", "string", "boolean", "null"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

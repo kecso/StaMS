@@ -125,7 +125,10 @@ define([
                         self.core.setAttribute(variableNode, 'name', variable.name);
                         self.core.setAttribute(variableNode, 'type', variable.type);
                         if (variable.init) {
-                            self.core.setAttribute(variableNode, 'initExpr', String(variable.init));
+                            var initBody = SmLangium.serializeVariableInit(parsed.document, variable.init);
+                            if (initBody) {
+                                self.core.setAttribute(variableNode, 'initExpr', initBody);
+                            }
                         }
                     });
 
@@ -138,12 +141,26 @@ define([
                     machine.actionsBlock?.actions.forEach(function (action) {
                         var actionNode = self.core.createNode({parent: machineNode, base: self.META['Action']});
                         self.core.setAttribute(actionNode, 'name', action.name);
+                        if (action.statements && action.statements.length > 0) {
+                            self.core.setAttribute(
+                                actionNode,
+                                'body',
+                                JSON.stringify(SmLangium.serializeStatements(parsed.document, action.statements))
+                            );
+                        }
                         actions[action.name] = actionNode;
                     });
 
                     machine.guardsBlock?.guards.forEach(function (guard) {
                         var guardNode = self.core.createNode({parent: machineNode, base: self.META['Guard']});
                         self.core.setAttribute(guardNode, 'name', guard.name);
+                        if (guard.statements && guard.statements.length > 0) {
+                            self.core.setAttribute(
+                                guardNode,
+                                'body',
+                                SmLangium.serializeGuardOrConstraintBody(parsed.document, guard.statements)
+                            );
+                        }
                         guards[guard.name] = guardNode;
                     });
 
@@ -151,6 +168,13 @@ define([
                         var constraintNode = self.core.createNode({parent: machineNode, base: self.META['Constraint']});
                         self.core.setAttribute(constraintNode, 'name', constraint.name);
                         self.core.setAttribute(constraintNode, 'kind', constraint.kind);
+                        if (constraint.statements && constraint.statements.length > 0) {
+                            self.core.setAttribute(
+                                constraintNode,
+                                'body',
+                                SmLangium.serializeGuardOrConstraintBody(parsed.document, constraint.statements)
+                            );
+                        }
                     });
 
                     machine.states.forEach(function (state) {

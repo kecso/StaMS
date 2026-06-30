@@ -1,0 +1,32 @@
+{
+  "id": "ModelToConstraints",
+  "name": "ModelToConstraints",
+  "version": "0.1.0",
+  "description": "Export GME constraint nodes to stams.constraints.v1 JSON.",
+  "icon": {
+    "class": "glyphicon glyphicon-export",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "machineName",
+      "displayName": "Machine name",
+      "description": "Optional machine name; exports all machines when empty.",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "registryKey",
+      "displayName": "Registry key",
+      "description": "Project registry key for the exported JSON.",
+      "value": "stams/constraints",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}

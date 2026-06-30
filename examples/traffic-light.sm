@@ -1,0 +1,18 @@
+machine TrafficLight {
+  events { tick }
+  actions {
+    showGreen { }
+    showYellow { }
+    showRed { }
+  }
+  initial state Green {
+    entry showGreen
+    on tick -> Yellow do showYellow
+  }
+  state Yellow {
+    on tick -> Red do showRed
+  }
+  state Red {
+    on tick -> Green do showGreen
+  }
+}

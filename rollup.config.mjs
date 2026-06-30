@@ -22,7 +22,11 @@ const external = [
     'archiver',
     'webgme',
     'stams/gme-helpers',
-    'stams/sm-langium'
+    'stams/sm-langium',
+    'stams/verification/expr-ast',
+    'stams/verification/model-export',
+    'stams/verification/constraints-export',
+    'stams/verification/simulation-engine'
 ];
 
 const pluginNames = Object.keys(webgmeSetup.components.plugins || {});

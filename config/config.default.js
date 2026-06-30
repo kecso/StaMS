@@ -47,6 +47,10 @@ config.rest.components.SmParse = {
 // Bundled Langium runtime for server plugins (TextToModel, ModelToText, …).
 config.requirejsPaths = config.requirejsPaths || {};
 config.requirejsPaths['stams/sm-langium'] = './build/stams/sm-langium';
+config.requirejsPaths['stams/verification/expr-ast'] = './src/common/verification/expr-ast';
+config.requirejsPaths['stams/verification/model-export'] = './src/common/verification/model-export';
+config.requirejsPaths['stams/verification/constraints-export'] = './src/common/verification/constraints-export';
+config.requirejsPaths['stams/verification/simulation-engine'] = './src/common/verification/simulation-engine';
 
 validateConfig(config);
 module.exports = config;

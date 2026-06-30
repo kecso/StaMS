@@ -17,26 +17,3 @@ export function saveDoc(text: string): void {
   }
   window.localStorage.setItem(DOC_KEY, text);
 }
-
-export const EXAMPLE_SM = `machine Turnstile {
-  variables { alarmCount: float = 0.0 }
-  events { coin push }
-  actions {
-    unlock { alarmCount = 0.0 }
-    lock { alarmCount = 0.0 }
-    alarm { alarmCount = alarmCount + 1.0 }
-  }
-  guards {
-    canUnlock { alarmCount == 0.0 }
-  }
-  initial state Locked {
-    entry lock
-    on coin -> Unlocked guard canUnlock do unlock
-    on push -> Locked do alarm
-  }
-  state Unlocked {
-    on push -> Locked do lock
-    on coin -> Unlocked
-  }
-}
-`;

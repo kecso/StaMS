@@ -1,0 +1,19 @@
+machine Door {
+  events { open close knock }
+  actions {
+    lockDoor { }
+    unlockDoor { }
+    signalKnock { }
+  }
+  guards {
+    mayOpen { }
+  }
+  initial state Closed {
+    entry lockDoor
+    on open -> Open guard mayOpen do unlockDoor
+    on knock -> Closed do signalKnock
+  }
+  state Open {
+    on close -> Closed do lockDoor
+  }
+}

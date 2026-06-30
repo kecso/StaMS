@@ -19,8 +19,10 @@ import {
   edgeEditModule,
   labelEditModule,
   labelEditUiModule,
-  loadDefaultModules
+  loadDefaultModules,
+  moveModule
 } from 'sprotty';
+import { LocationPostprocessor } from 'sprotty/lib/features/move/move';
 import { ElkFactory, ElkLayoutEngine, elkLayoutModule } from 'sprotty-elk';
 import ElkConstructor from 'elkjs/lib/elk.bundled.js';
 
@@ -38,6 +40,13 @@ export const SM_TYPES = {
   transition: 'edge:transition',
   transitionLabel: 'label:edge'
 } as const;
+
+/** Positions nodes from ELK layout without enabling drag-to-move. */
+const layoutPositionModule = new ContainerModule((bind) => {
+  bind(LocationPostprocessor).toSelf().inSingletonScope();
+  bind(TYPES.IVNodePostprocessor).toService(LocationPostprocessor);
+  bind(TYPES.HiddenVNodePostprocessor).toService(LocationPostprocessor);
+});
 
 /**
  * Bundled ELK runs the layout in the main thread (no worker URL wiring needed,
@@ -60,11 +69,10 @@ const elkFactory: ElkFactory = () =>
       // tiny circle hugging the box) and distribute them around the node.
       'elk.spacing.nodeSelfLoop': '60',
       'elk.layered.edgeRouting.selfLoopDistribution': 'EQUALLY',
-      // Give transition labels their own gap. HEAD (near the arrowhead) instead
-      // of CENTER so that mirror transitions (A→B and B→A) don't stack their
-      // labels at the same midpoint.
-      'elk.spacing.edgeLabel': '8',
-      'elk.edgeLabels.placement': 'HEAD'
+      // Reserve spacing around edge labels during layout. Final label placement
+      // (offset to one side of the line so mirror transitions don't overlap) is
+      // handled by Sprotty's edgePlacement in sm-to-sgraph.ts, not by ELK.
+      'elk.spacing.edgeLabel': '8'
     }
   });
 
@@ -96,15 +104,14 @@ export function createSmDiagramContainer(): Container {
   });
 
   const container = new Container();
-  // Exclude the editing modules: this is a read-only, model-generated diagram.
-  // edgeEditModule switches edges into edit mode on selection and adds
-  // routing-point handles whose views we never register — that produced the
-  // "missing view" fallbacks when clicking a connection. moveModule is kept on
-  // purpose: it binds the LocationPostprocessor that positions every element.
+  // Read-only diagram: no edge edit handles, no label edit UI, no node dragging.
+  // moveModule is excluded because it wires MoveMouseListener (states become
+  // draggable while edge routing points stay fixed). We still need
+  // LocationPostprocessor so ELK-computed positions are applied to the SVG.
   loadDefaultModules(container, {
-    exclude: [edgeEditModule, labelEditModule, labelEditUiModule]
+    exclude: [edgeEditModule, labelEditModule, labelEditUiModule, moveModule]
   });
-  container.load(elkLayoutModule, diagramModule);
+  container.load(elkLayoutModule, layoutPositionModule, diagramModule);
   container.bind(ElkFactory).toConstantValue(elkFactory);
   container.bind(TYPES.IModelLayoutEngine).toService(ElkLayoutEngine);
   return container;

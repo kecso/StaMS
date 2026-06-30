@@ -9,6 +9,11 @@ import { DiagnosticSeverity, type Diagnostic } from 'vscode-languageserver-types
 import { EmptyFileSystem, URI, type LangiumDocument } from 'langium';
 
 import { createStateMachineServices, type StateMachineServices } from './language/state-machine-module.js';
+export {
+    serializeStatements,
+    serializeGuardOrConstraintBody,
+    serializeVariableInit
+} from './body-serialize.js';
 import {
     type ActionDecl,
     type ConstraintDecl,

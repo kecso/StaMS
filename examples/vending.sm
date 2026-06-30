@@ -1,0 +1,19 @@
+machine Vending {
+  events { coin select dispense cancel }
+  actions {
+    acceptPayment { }
+    releaseItem { }
+    refund { }
+  }
+  initial state Idle {
+    on coin -> Selecting do acceptPayment
+  }
+  state Selecting {
+    on select -> Dispensing
+    on cancel -> Idle do refund
+  }
+  state Dispensing {
+    entry releaseItem
+    on dispense -> Idle
+  }
+}

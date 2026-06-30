@@ -1,0 +1,40 @@
+{
+  "id": "SimulateMachine",
+  "name": "SimulateMachine",
+  "version": "0.1.0",
+  "description": "Simulate a machine from verification-model JSON and grow a stams.trace.v1 trace.",
+  "icon": {
+    "class": "glyphicon glyphicon-play",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "machineName",
+      "displayName": "Machine name",
+      "description": "Machine to simulate (defaults to first machine).",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "events",
+      "displayName": "Events (JSON array)",
+      "description": "Ordered event names, e.g. [\"coin\",\"push\"].",
+      "value": "[]",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "registryKey",
+      "displayName": "Trace registry key",
+      "description": "Project registry key for the generated trace JSON.",
+      "value": "stams/trace",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}

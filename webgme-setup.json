@@ -24,6 +24,18 @@
       "BuildMetaModel": {
         "src": "src/plugins/BuildMetaModel",
         "test": "test/plugins/BuildMetaModel"
+      },
+      "ModelToVerification": {
+        "src": "src/plugins/ModelToVerification",
+        "test": "test/plugins/ModelToVerification"
+      },
+      "ModelToConstraints": {
+        "src": "src/plugins/ModelToConstraints",
+        "test": "test/plugins/ModelToConstraints"
+      },
+      "SimulateMachine": {
+        "src": "src/plugins/SimulateMachine",
+        "test": "test/plugins/SimulateMachine"
       }
     },
     "seeds": {

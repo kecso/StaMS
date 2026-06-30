@@ -5,7 +5,11 @@ import {
   Box,
   Button,
   Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Tab,
   Tabs,
@@ -21,7 +25,9 @@ import { useGmeClient } from '@/contexts/GmeClientContext';
 import { closeProject, selectProject } from '@/lib/gme-projects';
 import { subscribeProjectTerritory } from '@/lib/gme-territory';
 import { buildSmDiagramFromClient, PROJECT_ROOT } from '@/lib/sm-diagram-from-client';
-import { EXAMPLE_SM, loadDoc, saveDoc } from '@/lib/sm-document';
+import { buildVerificationModelFromClient } from '@/lib/sm-verification-from-client';
+import { loadDoc, saveDoc } from '@/lib/sm-document';
+import { SM_EXAMPLES, appendExampleText } from '@/lib/sm-examples';
 import { countDiagnostics, useSmValidation } from '@/lib/sm-parse';
 import {
   syncModelFromText,
@@ -49,6 +55,7 @@ export default function StudioPage() {
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [diagramView, setDiagramView] = useState<SmDiagramView | null>(null);
   const [activeMachineId, setActiveMachineId] = useState<string | undefined>();
+  const [exampleId, setExampleId] = useState(SM_EXAMPLES[0]?.id ?? '');
   const activeMachineIdRef = useRef<string | undefined>(undefined);
 
   activeMachineIdRef.current = activeMachineId;
@@ -109,10 +116,17 @@ export default function StudioPage() {
     };
   }, [text, textValid, projectId, client, workspaceState]);
 
-  const insertExample = useCallback(() => {
-    setText(EXAMPLE_SM);
-    saveDoc(EXAMPLE_SM);
-  }, []);
+  const appendExample = useCallback(() => {
+    const example = SM_EXAMPLES.find((item) => item.id === exampleId);
+    if (!example) {
+      return;
+    }
+    setText((current) => {
+      const next = appendExampleText(current, example.text);
+      saveDoc(next);
+      return next;
+    });
+  }, [exampleId]);
 
   useEffect(() => {
     if (!client || state !== 'connected' || !projectId) {
@@ -172,6 +186,16 @@ export default function StudioPage() {
       setDiagramView((view) => (view ? { ...view, activeMachineId: machineId } : view));
     },
     []
+  );
+
+  const getVerificationModel = useCallback(
+    (machineId: string) => {
+      if (!client || workspaceState !== 'open') {
+        return null;
+      }
+      return buildVerificationModelFromClient(client, machineId);
+    },
+    [client, workspaceState]
   );
 
   const breadcrumbs = useMemo(
@@ -255,10 +279,27 @@ export default function StudioPage() {
           {validationChip}
           {modelSyncChip}
           <Box sx={{ flex: 1 }} />
-          {text.trim().length === 0 && (
-            <Button size="small" variant="outlined" onClick={insertExample}>
-              Insert turnstile example
-            </Button>
+          {tab === 0 && (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <InputLabel id="sm-example-select">Example</InputLabel>
+                <Select
+                  labelId="sm-example-select"
+                  label="Example"
+                  value={exampleId}
+                  onChange={(event) => setExampleId(String(event.target.value))}
+                >
+                  {SM_EXAMPLES.map((example) => (
+                    <MenuItem key={example.id} value={example.id}>
+                      {example.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button size="small" variant="outlined" onClick={appendExample}>
+                Append example
+              </Button>
+            </Stack>
           )}
         </Stack>
 
@@ -289,7 +330,11 @@ export default function StudioPage() {
           )}
 
           {tab === 1 && (
-            <SmDiagram view={diagramView} onMachineChange={handleMachineChange} />
+            <SmDiagram
+              view={diagramView}
+              onMachineChange={handleMachineChange}
+              getVerificationModel={getVerificationModel}
+            />
           )}
         </Paper>
       </Stack>

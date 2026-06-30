@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stams.constraints.v1",
+  "title": "StaMS constraints",
+  "description": "Safety and goal constraints for offline verification.",
+  "type": "object",
+  "required": ["$schema", "version", "machines"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "stams.constraints.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "machines": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/machineConstraints" }
+    }
+  },
+  "$defs": {
+    "machineConstraints": {
+      "type": "object",
+      "required": ["name", "constraints"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "constraints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/constraint" }
+        }
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "required": ["name", "kind", "formula"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["safety", "goal"] },
+        "formula": { "$ref": "#/$defs/formula" }
+      }
+    },
+    "formula": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "expr"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "expr" },
+            "expr": { "$ref": "stams.verification-model.v1#/$defs/expr" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "op"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "ltl" },
+            "op": {
+              "enum": ["always", "eventually", "until", "and", "or", "not", "state"]
+            },
+            "left": { "$ref": "#/$defs/formula" },
+            "right": { "$ref": "#/$defs/formula" },
+            "arg": { "$ref": "#/$defs/formula" },
+            "state": { "type": "string" },
+            "expr": { "$ref": "stams.verification-model.v1#/$defs/expr" }
+          }
+        }
+      ]
+    }
+  }
+}

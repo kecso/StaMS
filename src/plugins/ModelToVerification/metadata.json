@@ -1,0 +1,32 @@
+{
+  "id": "ModelToVerification",
+  "name": "ModelToVerification",
+  "version": "0.1.0",
+  "description": "Export GME machine model to stams.verification-model.v1 JSON.",
+  "icon": {
+    "class": "glyphicon glyphicon-export",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "machineName",
+      "displayName": "Machine name",
+      "description": "Optional machine name; exports all machines when empty.",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "registryKey",
+      "displayName": "Registry key",
+      "description": "Project registry key for the exported JSON.",
+      "value": "stams/verification-model",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}
