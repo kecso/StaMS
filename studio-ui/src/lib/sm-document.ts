@@ -17,3 +17,10 @@ export function saveDoc(text: string): void {
   }
   window.localStorage.setItem(DOC_KEY, text);
 }
+
+export function clearDoc(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.localStorage.removeItem(DOC_KEY);
+}

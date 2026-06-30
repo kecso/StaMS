@@ -10,6 +10,7 @@ var express = require('express'),
     router = express.Router();
 
 var SmLangium;
+var BOOT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2);
 
 function loadSmLangium() {
     if (!SmLangium) {
@@ -36,6 +37,14 @@ function toMarker(diagnostic) {
 
 function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('SmParse');
+
+    router.get('/session', function (req, res) {
+        // The server uses in-memory model storage and embedded Mongo by default.
+        // A process restart invalidates every browser-side project id, so expose a
+        // per-process id that the studio can compare against its cached state.
+        res.set('Cache-Control', 'no-store');
+        res.json({ bootId: BOOT_ID });
+    });
 
     router.post('/parse', function (req, res) {
         var text = req.body && req.body.text;
@@ -91,7 +100,7 @@ function initialize(middlewareOpts) {
             });
     });
 
-    logger.debug('ready (POST /api/stams/parse)');
+    logger.debug('ready (GET /api/stams/session, POST /api/stams/parse)');
 }
 
 function start(callback) {

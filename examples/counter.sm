@@ -1,0 +1,47 @@
+machine Counter {
+  variables {
+    count: float = 0
+  }
+
+  events {
+    tick
+    reset
+  }
+
+  actions {
+    increment {
+      count = count + 1
+    }
+    clear {
+      count = 0
+    }
+  }
+
+  guards {
+    belowLimit {
+      count < 9
+    }
+    atLimit {
+      count >= 9
+    }
+  }
+
+  constraints {
+    safety neverNegative {
+      count >= 0
+    }
+    goal reachesFull {
+      count >= 9
+    }
+  }
+
+  initial state Counting {
+    on tick -> Counting guard belowLimit do increment
+    on tick -> Full guard atLimit do increment
+    on reset -> Counting do clear
+  }
+
+  state Full {
+    on reset -> Counting do clear
+  }
+}

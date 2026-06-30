@@ -12,6 +12,7 @@ import {
 } from 'react';
 
 import { ensureSocketIoGlobal, GME_CLASSES_SCRIPT } from '@/lib/config';
+import { clearStaleStudioSession } from '@/lib/server-session';
 import type { GmeClient } from '@/types/gme-global';
 
 type ConnectionState = 'loading' | 'connected' | 'error';
@@ -119,15 +120,23 @@ export function GmeClientProvider({ children }: { children: ReactNode }) {
   const [client, setClient] = useState<GmeClient | null>(null);
   const [state, setState] = useState<ConnectionState>('loading');
   const [error, setError] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const connectAttempt = useRef(0);
 
   const connect = useCallback(async () => {
     const attempt = ++connectAttempt.current;
+    setSessionChecked(false);
     setState('loading');
     setError(null);
     setClient(null);
 
     try {
+      await clearStaleStudioSession();
+      if (attempt !== connectAttempt.current) {
+        return;
+      }
+      setSessionChecked(true);
+
       const connectedClient = await createAndConnectClient();
       if (attempt !== connectAttempt.current) {
         return;
@@ -138,6 +147,7 @@ export function GmeClientProvider({ children }: { children: ReactNode }) {
       if (attempt !== connectAttempt.current) {
         return;
       }
+      setSessionChecked(true);
       const message =
         connectError instanceof Error ? connectError.message : 'Failed to connect to WebGME';
       setError(message);
@@ -159,7 +169,7 @@ export function GmeClientProvider({ children }: { children: ReactNode }) {
     [client, state, error, connect]
   );
 
-  return <GmeClientContext.Provider value={value}>{children}</GmeClientContext.Provider>;
+  return <GmeClientContext.Provider value={value}>{sessionChecked ? children : null}</GmeClientContext.Provider>;
 }
 
 export function useGmeClient(): GmeClientContextValue {
