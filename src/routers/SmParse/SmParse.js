@@ -7,6 +7,7 @@
  */
 var express = require('express'),
     path = require('path'),
+    appRoot = require('../../common/app-root'),
     router = express.Router();
 
 var SmLangium;
@@ -14,7 +15,7 @@ var BOOT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2);
 
 function loadSmLangium() {
     if (!SmLangium) {
-        SmLangium = require(path.join(process.cwd(), 'build', 'stams', 'sm-langium.cjs'));
+        SmLangium = require(path.join(appRoot(), 'build', 'stams', 'sm-langium.cjs'));
     }
     return SmLangium;
 }

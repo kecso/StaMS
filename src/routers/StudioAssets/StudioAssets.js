@@ -3,11 +3,12 @@
 
 var express = require('express'),
     path = require('path'),
+    appRoot = require('../../common/app-root'),
     router = express.Router();
 
 function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('StudioAssets'),
-        buildDir = path.join(process.cwd(), 'build');
+        buildDir = path.join(appRoot(), 'build');
 
     logger.debug('serving static assets from ' + buildDir);
 

@@ -8,6 +8,7 @@
 var express = require('express'),
     fs = require('fs'),
     path = require('path'),
+    appRoot = require('../../common/app-root'),
     router = express.Router();
 
 var studioOutDir;
@@ -25,7 +26,7 @@ function sendStudioIndex(res) {
 
 function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('StudioUi');
-    studioOutDir = path.join(process.cwd(), 'studio-ui', 'out');
+    studioOutDir = path.join(appRoot(), 'studio-ui', 'out');
 
     logger.debug('studio export directory: ' + studioOutDir);
 

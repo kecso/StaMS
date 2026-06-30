@@ -26,7 +26,7 @@ function ensureAzureAdPackage() {
   }
 }
 
-/** file:../webgme-engine deps are hoisted; link so electron-builder can resolve them. */
+/** Hoisted deps may need linking into webgme-engine/node_modules for electron-builder. */
 function linkHoistedEngineDep(packageName) {
   const src = path.join(NODE_MODULES, packageName);
   if (!fs.existsSync(src)) {

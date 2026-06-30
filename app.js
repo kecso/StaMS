@@ -1,6 +1,14 @@
 // jshint node: true
 'use strict';
-process.chdir(__dirname);
+
+const path = require('path');
+
+// Packaged Electron runs app.js from app.asar; that path is not a real directory on disk
+// (chdir fails on Windows). Routers resolve assets via STAMS_APP_ROOT instead of cwd.
+process.env.STAMS_APP_ROOT = __dirname;
+if (!__dirname.includes('.asar')) {
+    process.chdir(__dirname);
+}
 
 let shuttingDown = false;
 

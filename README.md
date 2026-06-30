@@ -27,14 +27,9 @@ See `docs/DESIGN.md` for the full design document.
 ## Prerequisites
 
 - Node.js ≥ 20
-- A sibling checkout of [webgme-engine](https://github.com/webgme/webgme-engine) on **`master`** (includes MemoryGMEAuth). StaMS links it via `file:../webgme-engine` — pull engine `master` when you want updates, then `npm install` in StaMS if needed.
 - **No MongoDB** — model/commits and auth/metadata are fully in-memory (`storage.database.type = memory` + `MemoryGMEAuth`). `.sm` files are the durable exchange format. A backend restart clears projects; the studio detects this via `GET /api/stams/session` (`bootId`) and wipes stale browser cache automatically.
 
-```bash
-# one-time, next to the StaMS clone
-git clone https://github.com/webgme/webgme-engine.git ../webgme-engine
-cd ../webgme-engine && git checkout master
-```
+StaMS depends on [webgme](https://github.com/webgme/webgme) **`main`** (`github:webgme/webgme#main`); webgme-engine comes transitively from that dependency. Run `npm install` after pulling StaMS to pick up upstream changes.
 
 ## Quick start
 
