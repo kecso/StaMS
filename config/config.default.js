@@ -47,6 +47,14 @@ config.requirejsPaths['stams/verification/expr-ast'] = './src/common/verificatio
 config.requirejsPaths['stams/verification/model-export'] = './src/common/verification/model-export';
 config.requirejsPaths['stams/verification/constraints-export'] = './src/common/verification/constraints-export';
 config.requirejsPaths['stams/verification/simulation-engine'] = './src/common/verification/simulation-engine';
+config.requirejsPaths['stams/verification/constraint-eval'] = './src/common/verification/constraint-eval';
+config.requirejsPaths['stams/verification/bounded-verifier'] = './src/common/verification/bounded-verifier';
+config.requirejsPaths['stams/verification/settings'] = './src/common/verification/settings';
+config.requirejsPaths['stams/verification/verifier'] = './src/common/verification/verifier';
+config.requirejsPaths['stams/verification/z3-runner'] = './src/common/verification/z3-runner';
+config.requirejsPaths['stams/verification/smt-bmc'] = './src/common/verification/smt-bmc';
+config.requirejsPaths['stams/verification/smt-expr'] = './src/common/verification/smt-expr';
+config.requirejsPaths['stams/verification/z3-verifier'] = './src/common/verification/z3-verifier';
 
 validateConfig(config);
 module.exports = config;

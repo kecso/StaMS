@@ -123,3 +123,34 @@ export interface SmTrace {
   initial: SmTraceSnapshot;
   steps: SmTraceStep[];
 }
+
+export type SmConstraintKind = 'safety' | 'goal';
+
+/** Constraint as declared in the model (read-only display in the Verify drawer). */
+export interface SmConstraint {
+  name: string;
+  kind: SmConstraintKind;
+  body: string;
+}
+
+/** Per-constraint outcome from server `VerifyModel` (stams.verification-result.v1). */
+export interface SmConstraintResult {
+  name: string;
+  kind: SmConstraintKind;
+  passed: boolean;
+  status: 'proved' | 'counterexample' | 'unknown' | 'error';
+  bound?: number;
+  message?: string;
+  counterexample?: SmTrace;
+}
+
+/** Server verification run result (stams.verification-result.v1). */
+export interface SmVerificationResult {
+  $schema: 'stams.verification-result.v1';
+  version: 1;
+  machine: string;
+  bound?: number;
+  engine?: string;
+  trace?: SmTrace;
+  results: SmConstraintResult[];
+}

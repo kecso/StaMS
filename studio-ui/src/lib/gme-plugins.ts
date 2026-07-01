@@ -66,3 +66,15 @@ export function runServerPlugin(
 export function runTextToModel(client: GmeClient, text: string): Promise<PluginRunResult> {
   return runServerPlugin(client, 'TextToModel', { text });
 }
+
+const DEFAULT_VERIFICATION_REGISTRY_KEY = 'stams/verification-result';
+
+export function runVerifyModel(
+  client: GmeClient,
+  machineName: string,
+  registryKey = DEFAULT_VERIFICATION_REGISTRY_KEY
+): Promise<PluginRunResult> {
+  return runServerPlugin(client, 'VerifyModel', { machineName, registryKey });
+}
+
+export { DEFAULT_VERIFICATION_REGISTRY_KEY };

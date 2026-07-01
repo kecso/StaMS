@@ -16,8 +16,8 @@ define([
         return value === undefined || value === null ? fallback : value;
     }
 
-    function pointerName(core, node, pointer) {
-        var target = GmeHelpers.getPointerTarget(core, node, pointer);
+    function pointerName(core, node, pointer, pathIndex) {
+        var target = GmeHelpers.getPointerTarget(core, node, pointer, pathIndex);
         return target ? attr(core, target, 'name', null) : null;
     }
 
@@ -26,6 +26,7 @@ define([
     }
 
     function exportMachine(core, machineNode, subtreeNodes) {
+        var pathIndex = subtreeNodes ? GmeHelpers.buildPathIndex(core, subtreeNodes) : null;
         function childrenOfType(typeName) {
             if (subtreeNodes) {
                 return subtreeNodes.filter(function (node) {
@@ -84,16 +85,16 @@ define([
                 name: attr(core, stateNode, 'name', ''),
                 isInitial: !!attr(core, stateNode, 'isInitial', false),
                 isFinal: !!attr(core, stateNode, 'isFinal', false),
-                entry: pointerName(core, stateNode, 'entry'),
-                run: pointerName(core, stateNode, 'run'),
-                exit: pointerName(core, stateNode, 'exit')
+                entry: pointerName(core, stateNode, 'entry', pathIndex),
+                run: pointerName(core, stateNode, 'run', pathIndex),
+                exit: pointerName(core, stateNode, 'exit', pathIndex)
             });
         });
 
         childrenOfType('Transition').forEach(function (transitionNode) {
-            var source = pointerName(core, transitionNode, 'src'),
-                target = pointerName(core, transitionNode, 'dst'),
-                event = pointerName(core, transitionNode, 'event');
+            var source = pointerName(core, transitionNode, 'src', pathIndex),
+                target = pointerName(core, transitionNode, 'dst', pathIndex),
+                event = pointerName(core, transitionNode, 'event', pathIndex);
             if (!source || !target || !event) {
                 return;
             }
@@ -102,8 +103,8 @@ define([
                 source: source,
                 target: target,
                 event: event,
-                guard: pointerName(core, transitionNode, 'guard'),
-                action: pointerName(core, transitionNode, 'action')
+                guard: pointerName(core, transitionNode, 'guard', pathIndex),
+                action: pointerName(core, transitionNode, 'action', pathIndex)
             });
         });
 

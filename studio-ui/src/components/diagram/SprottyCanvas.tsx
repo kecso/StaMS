@@ -22,6 +22,8 @@ import { smGraphToSGraph, type SmHighlight } from '@/lib/sprotty/sm-to-sgraph';
 type SprottyCanvasProps = {
   graph: SmMachineGraph;
   highlight?: SmHighlight;
+  /** Changes when the side drawer opens/closes so the canvas can re-fit. */
+  layoutEpoch?: number;
 };
 
 type HoverState = {
@@ -35,7 +37,7 @@ type HoverState = {
  * component is loaded client-side only (see {@link SmDiagram}) because Sprotty
  * relies on the DOM, inversify, and `reflect-metadata`.
  */
-export default function SprottyCanvas({ graph, highlight }: SprottyCanvasProps) {
+export default function SprottyCanvas({ graph, highlight, layoutEpoch = 0 }: SprottyCanvasProps) {
   const containerRef = useRef<Container | null>(null);
   const modelSourceRef = useRef<LocalModelSource | null>(null);
   const actionDispatcherRef = useRef<IActionDispatcher | null>(null);
@@ -44,6 +46,15 @@ export default function SprottyCanvas({ graph, highlight }: SprottyCanvasProps) 
   const [hover, setHover] = useState<HoverState | null>(null);
 
   graphRef.current = graph;
+
+  const fitToScreen = useCallback(() => {
+    if (!actionDispatcherRef.current || !lastFittedGraphRef.current) {
+      return;
+    }
+    void actionDispatcherRef.current.dispatch(
+      FitToScreenAction.create([], { padding: 40, maxZoom: 1, animate: false })
+    );
+  }, []);
 
   useEffect(() => {
     const container = createSmDiagramContainer();
@@ -88,6 +99,25 @@ export default function SprottyCanvas({ graph, highlight }: SprottyCanvasProps) 
       cancelled = true;
     };
   }, [graph, highlight]);
+
+  // Re-center when the diagram column resizes (e.g. side drawer opens).
+  useEffect(() => {
+    const host = document.getElementById(SPROTTY_DIV_ID);
+    const observeTarget = host?.parentElement;
+    if (!observeTarget) {
+      return;
+    }
+    const observer = new ResizeObserver(() => {
+      fitToScreen();
+    });
+    observer.observe(observeTarget);
+    return () => observer.disconnect();
+  }, [fitToScreen, graph]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(fitToScreen, 220);
+    return () => window.clearTimeout(timer);
+  }, [layoutEpoch, fitToScreen]);
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
     const modelId = modelIdFromDomTarget(event.target);

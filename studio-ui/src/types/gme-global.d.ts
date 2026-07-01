@@ -74,6 +74,7 @@ export type GmeClientNode = {
   getPointer?: (pointerName: string) => { to: string | null; from: string[] };
   getPointerId?: (pointerName: string) => string | null;
   getParentId?: () => string | null;
+  getRegistry?: (name: string) => string | null;
   isInstanceOf?: (baseId: string) => boolean;
   isTypeOf?: (typeId: string) => boolean;
 };

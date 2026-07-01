@@ -36,6 +36,10 @@
       "SimulateMachine": {
         "src": "src/plugins/SimulateMachine",
         "test": "test/plugins/SimulateMachine"
+      },
+      "VerifyModel": {
+        "src": "src/plugins/VerifyModel",
+        "test": "test/plugins/VerifyModel"
       }
     },
     "seeds": {

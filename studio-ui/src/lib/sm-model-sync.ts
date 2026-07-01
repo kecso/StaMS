@@ -44,3 +44,26 @@ export async function syncModelFromText(
     return { status: 'error', message };
   }
 }
+
+/** Remove all Machine nodes from the project (empty document / Clear). */
+export async function clearSyncedModel(client: GmeClient): Promise<ModelSyncResult> {
+  try {
+    const result = await runTextToModel(client, '');
+    if (!result.success) {
+      const detail =
+        result.error ??
+        result.messages?.map((message) => message.message).join('\n') ??
+        'TextToModel plugin failed';
+      return { status: 'error', message: detail };
+    }
+
+    return {
+      status: 'synced',
+      message: 'Model cleared',
+      syncedAt: Date.now()
+    };
+  } catch (syncError) {
+    const message = syncError instanceof Error ? syncError.message : 'Model clear failed';
+    return { status: 'error', message };
+  }
+}

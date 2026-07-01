@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <meta id="mounted-path" content="" />
       </head>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning style={{ margin: 0, height: '100dvh', overflow: 'hidden' }}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />

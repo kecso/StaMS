@@ -3,33 +3,28 @@
 import {
   Alert,
   Box,
-  Button,
   Chip,
-  FormControl,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   Stack,
-  Tab,
-  Tabs,
   Typography
 } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import SmDiagram from '@/components/diagram/SmDiagram';
-import StudioLayout from '@/components/StudioLayout';
+import StudioLayout, { type StudioViewTab } from '@/components/StudioLayout';
 import SmEditor from '@/components/editor/SmEditor';
 import { useGmeClient } from '@/contexts/GmeClientContext';
 import { closeProject, selectProject } from '@/lib/gme-projects';
 import { subscribeProjectTerritory } from '@/lib/gme-territory';
-import { buildSmDiagramFromClient, PROJECT_ROOT } from '@/lib/sm-diagram-from-client';
+import { buildSmDiagramFromClient, EMPTY_DIAGRAM_VIEW, PROJECT_ROOT } from '@/lib/sm-diagram-from-client';
+import { buildConstraintsFromClient } from '@/lib/sm-constraints-from-client';
 import { buildVerificationModelFromClient } from '@/lib/sm-verification-from-client';
 import { loadDoc, saveDoc } from '@/lib/sm-document';
-import { SM_EXAMPLES, appendExampleText } from '@/lib/sm-examples';
+import { SM_EXAMPLES, appendExampleText, getExampleById, type SmExample } from '@/lib/sm-examples';
 import { countDiagnostics, useSmValidation } from '@/lib/sm-parse';
 import {
+  clearSyncedModel,
   syncModelFromText,
   type ModelSyncStatus
 } from '@/lib/sm-model-sync';
@@ -42,9 +37,10 @@ const MODEL_SYNC_DEBOUNCE_MS = 600;
 
 export default function StudioPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const docName = getWorkspaceDocName();
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [tab, setTab] = useState(0);
+  const [viewTab, setViewTab] = useState<StudioViewTab>('text');
   const { client, state } = useGmeClient();
   const [workspaceState, setWorkspaceState] = useState<WorkspaceState>('idle');
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
@@ -55,7 +51,6 @@ export default function StudioPage() {
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [diagramView, setDiagramView] = useState<SmDiagramView | null>(null);
   const [activeMachineId, setActiveMachineId] = useState<string | undefined>();
-  const [exampleId, setExampleId] = useState(SM_EXAMPLES[0]?.id ?? '');
   const activeMachineIdRef = useRef<string | undefined>(undefined);
 
   activeMachineIdRef.current = activeMachineId;
@@ -70,10 +65,58 @@ export default function StudioPage() {
     setText(loadDoc() ?? '');
   }, [router]);
 
+  useEffect(() => {
+    if (searchParams.get('tab') === 'diagram') {
+      setViewTab('diagram');
+    }
+    const exampleParam = searchParams.get('example');
+    if (exampleParam) {
+      const example = getExampleById(exampleParam);
+      if (example) {
+        setText((current) => {
+          const next = appendExampleText(current, example.text);
+          saveDoc(next);
+          return next;
+        });
+      }
+    }
+  }, [searchParams]);
+
   const handleChange = useCallback((next: string) => {
     setText(next);
     saveDoc(next);
   }, []);
+
+  const handleAppendExample = useCallback((example: SmExample) => {
+    setText((current) => {
+      const next = appendExampleText(current, example.text);
+      saveDoc(next);
+      return next;
+    });
+  }, []);
+
+  const handleClearDocument = useCallback(() => {
+    setText('');
+    saveDoc('');
+    setActiveMachineId(undefined);
+    setDiagramView(EMPTY_DIAGRAM_VIEW);
+    setSyncStatus('pending');
+    setSyncMessage('Clearing model…');
+
+    if (!client || workspaceState !== 'open') {
+      setSyncStatus('skipped');
+      setSyncMessage('Document cleared');
+      return;
+    }
+
+    void clearSyncedModel(client).then((result) => {
+      setSyncStatus(result.status);
+      setSyncMessage(result.message ?? null);
+      if (result.status === 'synced') {
+        setDiagramView(buildSmDiagramFromClient(client, undefined));
+      }
+    });
+  }, [client, workspaceState]);
 
   useEffect(() => {
     if (!projectId || !text.trim() || !textValid) {
@@ -100,12 +143,6 @@ export default function StudioPage() {
         if (!cancelled) {
           setSyncStatus(result.status);
           setSyncMessage(result.message ?? null);
-          // TextToModel commits on the server; the client picks up the new hash via
-          // NEW_COMMIT_STATE → territory reload → rebuild (see diagram effect).
-          if (result.status === 'synced') {
-            // eslint-disable-next-line no-console
-            console.log('[SmSync] TextToModel ok, client commit:', client.getActiveCommitHash?.());
-          }
         }
       });
     }, MODEL_SYNC_DEBOUNCE_MS);
@@ -115,18 +152,6 @@ export default function StudioPage() {
       window.clearTimeout(timer);
     };
   }, [text, textValid, projectId, client, workspaceState]);
-
-  const appendExample = useCallback(() => {
-    const example = SM_EXAMPLES.find((item) => item.id === exampleId);
-    if (!example) {
-      return;
-    }
-    setText((current) => {
-      const next = appendExampleText(current, example.text);
-      saveDoc(next);
-      return next;
-    });
-  }, [exampleId]);
 
   useEffect(() => {
     if (!client || state !== 'connected' || !projectId) {
@@ -143,10 +168,6 @@ export default function StudioPage() {
         if (cancelled) {
           return;
         }
-        // The project is gone (e.g. server restarted — storage is in-memory).
-        // Stop the client from watching the dead project (otherwise it keeps
-        // re-joining the missing room on every reconnect), clear the stale
-        // workspace, and return to the start page.
         void closeProject(client).catch(() => undefined);
         clearWorkspace();
         setWorkspaceError(err instanceof Error ? err.message : 'Could not load workspace');
@@ -156,7 +177,7 @@ export default function StudioPage() {
     return () => {
       cancelled = true;
     };
-  }, [client, state, projectId]);
+  }, [client, state, projectId, router]);
 
   useEffect(() => {
     if (!client || workspaceState !== 'open') {
@@ -179,13 +200,10 @@ export default function StudioPage() {
     };
   }, [client, workspaceState]);
 
-  const handleMachineChange = useCallback(
-    (machineId: string) => {
-      setActiveMachineId(machineId);
-      setDiagramView((view) => (view ? { ...view, activeMachineId: machineId } : view));
-    },
-    []
-  );
+  const handleMachineChange = useCallback((machineId: string) => {
+    setActiveMachineId(machineId);
+    setDiagramView((view) => (view ? { ...view, activeMachineId: machineId } : view));
+  }, []);
 
   const getVerificationModel = useCallback(
     (machineId: string) => {
@@ -193,6 +211,16 @@ export default function StudioPage() {
         return null;
       }
       return buildVerificationModelFromClient(client, machineId);
+    },
+    [client, workspaceState]
+  );
+
+  const getConstraints = useCallback(
+    (machineId: string) => {
+      if (!client || workspaceState !== 'open') {
+        return null;
+      }
+      return buildConstraintsFromClient(client, machineId);
     },
     [client, workspaceState]
   );
@@ -206,133 +234,73 @@ export default function StudioPage() {
     return null;
   }
 
-  const connectionChip = (() => {
-    if (state !== 'connected') {
-      return <Chip size="small" color="warning" label="Connecting…" />;
-    }
-    if (workspaceState === 'opening') {
-      return <Chip size="small" color="info" label="Loading…" />;
-    }
-    if (workspaceState === 'error') {
-      return <Chip size="small" color="error" label="Backend unavailable" />;
-    }
-    if (workspaceState === 'open') {
-      return <Chip size="small" color="success" label="Ready" />;
-    }
-    return <Chip size="small" variant="outlined" label="Idle" />;
-  })();
-
-  const validationChip = (() => {
-    if (validation.loading) {
-      return <Chip size="small" color="info" variant="outlined" label="Checking…" />;
-    }
-    const { errors, warnings } = countDiagnostics(validation.diagnostics);
-    if (errors > 0) {
-      const detail = warnings > 0 ? ` (${warnings} warning${warnings === 1 ? '' : 's'})` : '';
-      return (
+  const statusBar = (
+    <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
+      {state !== 'connected' ? (
+        <Chip size="small" color="warning" variant="outlined" label="Connecting…" />
+      ) : workspaceState === 'opening' ? (
+        <Chip size="small" variant="outlined" label="Loading…" />
+      ) : workspaceState === 'open' ? (
+        <Chip size="small" color="success" variant="outlined" label="Ready" />
+      ) : null}
+      {validation.loading ? (
+        <Chip size="small" variant="outlined" label="Checking…" />
+      ) : countDiagnostics(validation.diagnostics).errors > 0 ? (
         <Chip
           size="small"
           color="error"
           variant="outlined"
-          label={`${errors} error${errors === 1 ? '' : 's'}${detail}`}
+          label={`${countDiagnostics(validation.diagnostics).errors} error(s)`}
         />
-      );
-    }
-    if (warnings > 0) {
-      return (
-        <Chip
-          size="small"
-          color="warning"
-          variant="outlined"
-          label={`${warnings} warning${warnings === 1 ? '' : 's'}`}
-        />
-      );
-    }
-    const sourceHint = validation.source === 'local' ? ' (offline rules)' : '';
-    return <Chip size="small" color="success" variant="outlined" label={`Valid${sourceHint}`} />;
-  })();
-
-  const modelSyncChip = (() => {
-    switch (syncStatus) {
-      case 'pending':
-        return <Chip size="small" color="info" variant="outlined" label="Sync pending…" />;
-      case 'synced':
-        return <Chip size="small" color="success" variant="outlined" label="Model synced" />;
-      case 'skipped':
-        return <Chip size="small" variant="outlined" label="Sync paused" />;
-      case 'error':
-        return <Chip size="small" color="error" variant="outlined" label="Sync failed" />;
-      default:
-        return <Chip size="small" variant="outlined" label="Sync idle" />;
-    }
-  })();
+      ) : (
+        <Chip size="small" color="success" variant="outlined" label="Valid" />
+      )}
+      {syncStatus === 'synced' && (
+        <Chip size="small" color="info" variant="outlined" label="Synced" />
+      )}
+      {syncStatus === 'pending' && (
+        <Chip size="small" variant="outlined" label="Syncing…" />
+      )}
+      {syncMessage && syncStatus !== 'idle' && (
+        <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+          {syncMessage}
+        </Typography>
+      )}
+    </Stack>
+  );
 
   return (
-    <StudioLayout breadcrumbs={breadcrumbs}>
-      <Stack spacing={2} sx={{ height: 'calc(100vh - 160px)' }}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-            {docName}.sm
-          </Typography>
-          {connectionChip}
-          {validationChip}
-          {modelSyncChip}
-          <Box sx={{ flex: 1 }} />
-          {tab === 0 && (
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FormControl size="small" sx={{ minWidth: 180 }}>
-                <InputLabel id="sm-example-select">Example</InputLabel>
-                <Select
-                  labelId="sm-example-select"
-                  label="Example"
-                  value={exampleId}
-                  onChange={(event) => setExampleId(String(event.target.value))}
-                >
-                  {SM_EXAMPLES.map((example) => (
-                    <MenuItem key={example.id} value={example.id}>
-                      {example.title}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <Button size="small" variant="outlined" onClick={appendExample}>
-                Append example
-              </Button>
-            </Stack>
-          )}
-        </Stack>
-
+    <StudioLayout
+      breadcrumbs={breadcrumbs}
+      viewTab={viewTab}
+      onViewTabChange={setViewTab}
+      examples={SM_EXAMPLES}
+      onAppendExample={handleAppendExample}
+      onClearDocument={handleClearDocument}
+      statusBar={statusBar}
+    >
+      <Stack spacing={1} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {workspaceState === 'error' && (
-          <Alert severity="warning">
-            {workspaceError ?? 'Could not connect the model backend.'} The text editor still works
-            locally; diagram and model sync need the backend.
+          <Alert severity="warning" sx={{ flexShrink: 0 }}>
+            {workspaceError ?? 'Could not connect the model backend.'}
           </Alert>
         )}
 
-        {syncMessage && syncStatus !== 'idle' && (
-          <Typography variant="caption" color="text.secondary">
-            {syncMessage}
-          </Typography>
-        )}
-
-        <Tabs value={tab} onChange={(_, value) => setTab(value)}>
-          <Tab label="Text (.sm)" />
-          <Tab label="Diagram" />
-        </Tabs>
-
         <Paper
           variant="outlined"
-          sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+          sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
         >
-          {tab === 0 && (
-            <SmEditor value={text} onChange={handleChange} diagnostics={validation.diagnostics} />
-          )}
-
-          {tab === 1 && (
+          {viewTab === 'text' ? (
+            <Box sx={{ flex: 1, minHeight: 0 }}>
+              <SmEditor value={text} onChange={handleChange} diagnostics={validation.diagnostics} />
+            </Box>
+          ) : (
             <SmDiagram
               view={diagramView}
               onMachineChange={handleMachineChange}
+              client={client}
               getVerificationModel={getVerificationModel}
+              getConstraints={getConstraints}
             />
           )}
         </Paper>

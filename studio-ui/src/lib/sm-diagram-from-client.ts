@@ -254,6 +254,12 @@ function attrBool(node: GmeClientNode, name: string): boolean {
   return value === true || value === 'true';
 }
 
+export const EMPTY_DIAGRAM_VIEW: SmDiagramView = {
+  machines: [],
+  activeMachineId: '',
+  graphsByMachineId: {}
+};
+
 function emptyView(): SmDiagramView {
-  return { machines: [], activeMachineId: '', graphsByMachineId: {} };
+  return EMPTY_DIAGRAM_VIEW;
 }

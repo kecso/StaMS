@@ -31,7 +31,7 @@ machine Turnstile {
       alarmCount >= 0.0
     }
     goal eventuallyUnlocked {
-      alarmCount >= 0.0
+      inState(Unlocked)
     }
   }
 

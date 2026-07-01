@@ -144,9 +144,17 @@ export default function StartPage() {
 
   if (state === 'loading') {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          height: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          bgcolor: 'background.default'
+        }}
+      >
         <WelcomeHeader />
-        <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
+        <Stack alignItems="center" spacing={2} sx={{ flex: 1, justifyContent: 'center' }}>
           <CircularProgress />
           <Typography color="text.secondary">Connecting…</Typography>
         </Stack>
@@ -156,25 +164,44 @@ export default function StartPage() {
 
   if (state === 'error') {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          height: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          bgcolor: 'background.default'
+        }}
+      >
         <WelcomeHeader />
-        <Stack spacing={2} sx={{ maxWidth: 560, mx: 'auto', py: 6, px: 3 }}>
-          <Alert severity="error">
-            {error ?? 'Could not connect. Ensure `npm start` is running on port 8888.'}
-          </Alert>
-          <Button variant="contained" onClick={reconnect}>
-            Retry connection
-          </Button>
-        </Stack>
+        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <Stack spacing={2} sx={{ maxWidth: 560, mx: 'auto', py: 6, px: 3 }}>
+            <Alert severity="error">
+              {error ?? 'Could not connect. Ensure `npm start` is running on port 8888.'}
+            </Alert>
+            <Button variant="contained" onClick={reconnect}>
+              Retry connection
+            </Button>
+          </Stack>
+        </Box>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box
+      sx={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        bgcolor: 'background.default'
+      }}
+    >
       <WelcomeHeader />
 
-      <Stack spacing={3} sx={{ maxWidth: 480, mx: 'auto', py: 6, px: 3 }}>
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        <Stack spacing={3} sx={{ maxWidth: 480, mx: 'auto', py: 6, px: 3 }}>
         <Typography variant="body2" color="text.secondary" textAlign="center">
           One in-memory workspace per session. Save or share your work as a `.sm` file.
         </Typography>
@@ -226,7 +253,8 @@ export default function StartPage() {
             }
           }}
         />
-      </Stack>
+        </Stack>
+      </Box>
     </Box>
   );
 }

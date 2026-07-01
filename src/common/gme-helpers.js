@@ -102,17 +102,57 @@ define([], function () {
     }
 
     function getChildrenOfType(core, parent, typeName) {
+        // Prefer relid traversal: some Core wrappers expose children as absolute paths
+        // via getOwnChildrenPaths, but single-arg core.getNode(path) is unavailable there.
+        // That broke collectNodesOfType walks (constraints looked missing in plugin tests).
+        if (typeof core.getChildrenRelids === 'function' && typeof core.getChild === 'function') {
+            return core.getChildrenRelids(parent).map(function (relid) {
+                return core.getChild(parent, relid);
+            }).filter(function (node) {
+                return node && isTypeOf(core, node, typeName);
+            });
+        }
+        var parentPath = core.getPath(parent);
         return collectNodesOfType(core, parent, typeName).filter(function (node) {
-            return core.getParent(node) === parent;
+            var nodeParent = core.getParent(node);
+            return nodeParent && core.getPath(nodeParent) === parentPath;
         });
     }
 
-    function getPointerTarget(core, node, pointerName) {
-        var path = core.getPointerPath(node, pointerName);
-        if (!path) {
+    function buildPathIndex(core, nodes) {
+        var index = {};
+        (nodes || []).forEach(function (node) {
+            if (node) {
+                index[core.getPath(node)] = node;
+            }
+        });
+        return index;
+    }
+
+    function getPointerTarget(core, node, pointerName, pathIndex) {
+        var pointerPath = core.getPointerPath(node, pointerName);
+        if (!pointerPath) {
             return null;
         }
-        return nodeFromPath(core, path) || childFromPathOrRelid(core, node, path);
+        if (pathIndex && pathIndex[pointerPath]) {
+            return pathIndex[pointerPath];
+        }
+        var root = typeof core.getRoot === 'function' ? core.getRoot(node) : null;
+        if (root && typeof core.getNode === 'function') {
+            if (core.getNode.length >= 2) {
+                var byRoot = core.getNode(root, pointerPath);
+                if (byRoot) {
+                    return byRoot;
+                }
+            }
+            if (core.getNode.length === 1) {
+                var byAbs = core.getNode(pointerPath);
+                if (byAbs) {
+                    return byAbs;
+                }
+            }
+        }
+        return nodeFromPath(core, pointerPath) || childFromPathOrRelid(core, node, pointerPath);
     }
 
     return {
@@ -122,6 +162,7 @@ define([], function () {
         getChildrenOfType: getChildrenOfType,
         collectNodesOfType: collectNodesOfType,
         getPointerTarget: getPointerTarget,
+        buildPathIndex: buildPathIndex,
         getPointerPath: function (core, node, pointerName) {
             var path = core.getPointerPath(node, pointerName);
             return path === null ? null : path;

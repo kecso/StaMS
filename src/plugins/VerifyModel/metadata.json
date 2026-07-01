@@ -1,0 +1,32 @@
+{
+  "id": "VerifyModel",
+  "name": "VerifyModel",
+  "version": "0.1.0",
+  "description": "Bounded verification of safety and goal constraints (in-memory IR, persists only the result).",
+  "icon": {
+    "class": "glyphicon glyphicon-ok-circle",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "machineName",
+      "displayName": "Machine name",
+      "description": "Machine to verify (defaults to first machine).",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "registryKey",
+      "displayName": "Result registry key",
+      "description": "Project registry key for stams.verification-result.v1 JSON.",
+      "value": "stams/verification-result",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}

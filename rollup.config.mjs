@@ -26,7 +26,15 @@ const external = [
     'stams/verification/expr-ast',
     'stams/verification/model-export',
     'stams/verification/constraints-export',
-    'stams/verification/simulation-engine'
+    'stams/verification/simulation-engine',
+    'stams/verification/constraint-eval',
+    'stams/verification/bounded-verifier',
+    'stams/verification/settings',
+    'stams/verification/verifier',
+    'stams/verification/z3-runner',
+    'stams/verification/smt-bmc',
+    'stams/verification/smt-expr',
+    'stams/verification/z3-verifier'
 ];
 
 const pluginNames = Object.keys(webgmeSetup.components.plugins || {});

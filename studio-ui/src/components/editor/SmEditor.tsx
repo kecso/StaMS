@@ -69,6 +69,7 @@ export default function SmEditor({
 
   return (
     <Editor
+      height="100%"
       language={SM_LANGUAGE_ID}
       theme="vs-dark"
       value={value}

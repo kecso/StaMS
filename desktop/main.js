@@ -14,12 +14,14 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const net = require('net');
 const { spawn } = require('child_process');
 const { app, BrowserWindow, shell, dialog } = require('electron');
 
-const PORT = Number(process.env.STAMS_PORT || 8888);
-const STUDIO_URL = `http://127.0.0.1:${PORT}/`;
 const DEBUG = /^(1|true|yes)$/i.test(process.env.STAMS_DESKTOP_DEBUG || '');
+
+let port = null;
+let studioUrl = null;
 
 let serverProcess = null;
 let mainWindow = null;
@@ -37,7 +39,7 @@ function initLog() {
     fs.mkdirSync(app.getPath('userData'), { recursive: true });
     logStream = fs.createWriteStream(logPath(), { flags: 'a' });
     writeLog('--- desktop session start ---');
-    writeLog(`packaged=${app.isPackaged} debug=${DEBUG} port=${PORT}`);
+    writeLog(`packaged=${app.isPackaged} debug=${DEBUG} port=${port}`);
     writeLog(`log file: ${logPath()}`);
   } catch (err) {
     console.error('[desktop] failed to open log file:', err);
@@ -59,13 +61,43 @@ function appRoot() {
   return path.join(__dirname, '..');
 }
 
-function waitForPort(port, timeoutMs = 120000) {
+function findFreePort() {
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.unref();
+    probe.on('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const chosen = probe.address().port;
+      probe.close((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(chosen);
+      });
+    });
+  });
+}
+
+/** Desktop defaults to an ephemeral port so it does not clash with npm start on :8888. */
+async function resolvePort() {
+  if (process.env.STAMS_PORT) {
+    const explicit = Number(process.env.STAMS_PORT);
+    if (!Number.isFinite(explicit) || explicit <= 0) {
+      throw new Error(`Invalid STAMS_PORT: ${process.env.STAMS_PORT}`);
+    }
+    return explicit;
+  }
+  return findFreePort();
+}
+
+function waitForPort(listenPort, timeoutMs = 120000) {
   const deadline = Date.now() + timeoutMs;
   return new Promise((resolve, reject) => {
     const tryOnce = () => {
-      const req = http.get(`http://127.0.0.1:${port}/api/stams/session`, (res) => {
+      const req = http.get(`http://127.0.0.1:${listenPort}/api/stams/session`, (res) => {
         res.resume();
-        if (res.statusCode && res.statusCode < 500) {
+        if (res.statusCode === 200) {
           resolve();
           return;
         }
@@ -104,7 +136,7 @@ function startBackend() {
     env: {
       ...process.env,
       ELECTRON_RUN_AS_NODE: '1',
-      STAMS_PORT: String(PORT),
+      STAMS_PORT: String(port),
       STAMS_APP_ROOT: root
     },
     stdio: ['ignore', 'pipe', 'pipe']
@@ -181,7 +213,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadURL(STUDIO_URL);
+  mainWindow.loadURL(studioUrl);
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -212,10 +244,13 @@ if (!gotLock) {
   });
 
   app.whenReady().then(async () => {
-    initLog();
     try {
+      port = await resolvePort();
+      studioUrl = `http://127.0.0.1:${port}/`;
+      initLog();
+      writeLog(`studio url: ${studioUrl}`);
       startBackend();
-      await waitForPort(PORT);
+      await waitForPort(port);
       writeLog('backend ready, opening window');
       createWindow();
     } catch (err) {

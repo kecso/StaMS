@@ -1,0 +1,15 @@
+{
+  "StaMS_Verification": {
+    "maxDepth": 12,
+    "timeoutMs": 30000,
+    "engine": "auto",
+    "registry": {
+      "result": "stams/verification-result"
+    },
+    "z3": {
+      "command": "z3",
+      "args": ["-in", "-smt2"],
+      "timeoutMs": 30000
+    }
+  }
+}

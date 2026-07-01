@@ -48,10 +48,6 @@ export default function SimulationPanel({
   return (
     <Box
       sx={{
-        width: 280,
-        flexShrink: 0,
-        borderLeft: 1,
-        borderColor: 'divider',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',

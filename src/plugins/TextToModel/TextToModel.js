@@ -74,8 +74,10 @@ define([
         self.result.setSuccess(false);
 
         if (!content.trim()) {
-            core.setRegistry(self.rootNode, 'TextToModel_bootstrap', Date.now().toString());
-            return self.save('bootstrap', finish);
+            return removeDirectMachineChildren(core, self.rootNode).then(function () {
+                core.setRegistry(self.rootNode, 'TextToModel_bootstrap', Date.now().toString());
+                return self.save('bootstrap', finish);
+            });
         }
 
         SmLangium.parseSm(content, 'memory:///document.sm')

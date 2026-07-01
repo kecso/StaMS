@@ -100,8 +100,16 @@ PrimaryExpr infers Expression:
     '(' expression=Expression ')' |
     NumberLiteral |
     StringLiteral |
+    InStateExpr |
+    StateCompareExpr |
     VariableRef |
     FunctionCall;
+
+InStateExpr infers Expression:
+    'inState' '(' stateRef=[State:ID] ')';
+
+StateCompareExpr infers Expression:
+    'state' op=('==' | '!=') stateRef=[State:ID];
 
 VariableRef infers Expression:
     variable=[VariableDecl:ID];

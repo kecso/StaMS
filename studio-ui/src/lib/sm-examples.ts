@@ -3,29 +3,61 @@ export type SmExample = {
   title: string;
   description: string;
   text: string;
+  /** Includes `constraints { ... }` blocks for the Verify drawer. */
+  hasVerification?: boolean;
 };
+
+/** Canonical verification walkthrough (matches `examples/turnstile.sm`). */
+export const VERIFICATION_EXAMPLE_ID = 'turnstile';
 
 export const SM_EXAMPLES: SmExample[] = [
   {
-    id: 'turnstile',
+    id: VERIFICATION_EXAMPLE_ID,
     title: 'Turnstile',
-    description: 'Coin-operated turnstile with alarm counter.',
+    description: 'Coin-operated turnstile with safety and goal constraints.',
     text: `machine Turnstile {
-  variables { alarmCount: float = 0.0 }
-  events { coin push }
+  variables {
+    alarmCount: float = 0.0
+  }
+
+  events {
+    coin
+    push
+  }
+
   actions {
-    unlock { alarmCount = 0.0 }
-    lock { alarmCount = 0.0 }
-    alarm { alarmCount = alarmCount + 1.0 }
+    unlock {
+      alarmCount = alarmCount + 1.0
+    }
+    lock {
+      alarmCount = 0.0
+    }
+    alarm {
+      alarmCount = alarmCount + 1.0
+    }
   }
+
   guards {
-    canUnlock { alarmCount == 0.0 }
+    canUnlock {
+      alarmCount == 0.0
+    }
   }
+
+  constraints {
+    safety noAlarmWhenLocked {
+      alarmCount >= 0.0
+    }
+    goal eventuallyUnlocked {
+      inState(Unlocked)
+    }
+  }
+
   initial state Locked {
     entry lock
     on coin -> Unlocked guard canUnlock do unlock
     on push -> Locked do alarm
   }
+
   state Unlocked {
     on push -> Locked do lock
     on coin -> Unlocked
@@ -34,8 +66,9 @@ export const SM_EXAMPLES: SmExample[] = [
   },
   {
     id: 'counter',
-    title: 'Counter (stops at 10)',
-    description: 'Increments a variable on each tick; guards stop it at 10, reset clears it.',
+    title: 'Counter',
+    description: 'Counts to full with safety and goal constraints; reset only from Full.',
+    hasVerification: true,
     text: `machine Counter {
   variables { count: float = 0 }
   events { tick reset }
@@ -47,10 +80,17 @@ export const SM_EXAMPLES: SmExample[] = [
     belowLimit { count < 9 }
     atLimit { count >= 9 }
   }
+  constraints {
+    safety countNonNegative {
+      count >= 0
+    }
+    goal eventuallyFull {
+      count >= 9
+    }
+  }
   initial state Counting {
     on tick -> Counting guard belowLimit do increment
     on tick -> Full guard atLimit do increment
-    on reset -> Counting do clear
   }
   state Full {
     on reset -> Counting do clear
@@ -130,6 +170,14 @@ export const SM_EXAMPLES: SmExample[] = [
   }
 ];
 
+export function getExampleById(id: string): SmExample | undefined {
+  return SM_EXAMPLES.find((item) => item.id === id);
+}
+
+export function getVerificationExample(): SmExample {
+  return getExampleById(VERIFICATION_EXAMPLE_ID) ?? SM_EXAMPLES[0];
+}
+
 /** Append example text so a document can contain multiple machines. */
 export function appendExampleText(current: string, snippet: string): string {
   const base = current.trimEnd();
@@ -141,4 +189,9 @@ export function appendExampleText(current: string, snippet: string): string {
     return addition;
   }
   return `${base}\n\n${addition}`;
+}
+
+/** Replace document text with a single example (used for “load example”). */
+export function loadExampleText(example: SmExample): string {
+  return example.text.trim();
 }

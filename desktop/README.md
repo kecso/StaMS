@@ -10,7 +10,7 @@ From the repository root (after `npm run setup`):
 npm run desktop:start
 ```
 
-This launches Electron, spawns `app.js` as a child process, waits for `:8888`, and opens the studio UI.
+This launches Electron, spawns `app.js` on a **random free port** (so it does not clash with `npm start` on `:8888`), waits for the session API, and opens the studio UI.
 
 ### Debug mode
 
@@ -50,5 +50,5 @@ Outputs land in `dist/desktop/`:
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `STAMS_PORT` | `8888` | Backend listen port |
+| `STAMS_PORT` | (random free port) | Backend listen port; set explicitly to pin a port |
 | `STAMS_DESKTOP_DEBUG` | (unset) | `1` = DevTools, console logging, keep window open if backend dies; log file always written |

@@ -134,6 +134,17 @@ define([
         };
     }
 
+    function getEnabledTransitions(trace) {
+        var runtime = trace._runtime;
+        var machine = runtime.machine;
+        return (machine.transitions || []).filter(function (transition) {
+            if (transition.source !== runtime.stateName) {
+                return false;
+            }
+            return guardPasses(machine, transition.guard, runtime.env);
+        });
+    }
+
     function getEnabledEvents(trace) {
         var runtime = trace._runtime;
         var machine = runtime.machine;
@@ -183,6 +194,30 @@ define([
                 break;
             }
         }
+
+        return applyTransition(trace, chosen, eventName, before, guardPassed, candidates);
+    }
+
+    function stepTransition(trace, transition) {
+        var runtime = trace._runtime;
+        var before = snapshot(runtime.stateName, runtime.env);
+        if (!transition || transition.source !== runtime.stateName) {
+            return applyTransition(trace, null, transition ? transition.event : '', before, false, []);
+        }
+        var guardPassed = guardPasses(runtime.machine, transition.guard, runtime.env);
+        return applyTransition(
+            trace,
+            guardPassed ? transition : null,
+            transition.event,
+            before,
+            guardPassed,
+            [transition]
+        );
+    }
+
+    function applyTransition(trace, chosen, eventName, before, guardPassed, candidates) {
+        var runtime = trace._runtime;
+        var machine = runtime.machine;
 
         if (!chosen) {
             var failedStep = {
@@ -264,8 +299,10 @@ define([
         SCHEMA: SCHEMA,
         createTrace: createTrace,
         getEnabledEvents: getEnabledEvents,
+        getEnabledTransitions: getEnabledTransitions,
         getCurrentSnapshot: getCurrentSnapshot,
         step: step,
+        stepTransition: stepTransition,
         run: run,
         simulate: simulate,
         stripRuntime: stripRuntime

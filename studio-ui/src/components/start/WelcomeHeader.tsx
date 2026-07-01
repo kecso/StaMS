@@ -6,6 +6,7 @@ export default function WelcomeHeader() {
   return (
     <Box
       sx={{
+        flexShrink: 0,
         bgcolor: '#1a2332',
         color: 'common.white',
         py: 5,
