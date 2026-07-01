@@ -1,4 +1,6 @@
 machine Turnstile {
+  description "Coin-operated turnstile with safety and goal constraints."
+
   variables {
     alarmCount: float = 0.0
   }

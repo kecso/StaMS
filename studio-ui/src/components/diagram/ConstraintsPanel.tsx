@@ -127,14 +127,7 @@ export default function ConstraintsPanel({
   );
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        bgcolor: 'background.paper'
-      }}
-    >
+    <Box sx={{ bgcolor: 'background.paper' }}>
       <Box sx={{ p: 2 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           Verify · {machineName}
@@ -256,7 +249,7 @@ export default function ConstraintsPanel({
 
       <Divider />
 
-      <Box sx={{ p: 2, flex: 1, minHeight: 0, overflow: 'auto' }}>
+      <Box sx={{ p: 2 }}>
         <Typography variant="caption" color="text.secondary">
           Constraints ({constraints.length})
         </Typography>

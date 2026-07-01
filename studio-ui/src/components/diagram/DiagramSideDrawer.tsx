@@ -79,7 +79,7 @@ export default function DiagramSideDrawer({
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-        <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
           {children}
         </Box>
       </Box>

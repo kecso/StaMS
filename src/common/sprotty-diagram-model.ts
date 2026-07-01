@@ -33,12 +33,14 @@ export interface SmMachineRef {
     /** Stable id — prefer WebGME node path, e.g. `/1/2`. */
     id: string;
     name: string;
+    description?: string;
 }
 
 /** One machine's diagram content. */
 export interface SmMachineGraph {
     machineId: string;
     machineName: string;
+    machineDescription?: string;
     children: SmDiagramElement[];
 }
 

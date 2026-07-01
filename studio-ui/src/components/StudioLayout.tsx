@@ -1,6 +1,7 @@
 'use client';
 
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import SaveIcon from '@mui/icons-material/Save';
 import {
   AppBar,
   Box,
@@ -31,6 +32,7 @@ export default function StudioLayout({
   examples,
   onAppendExample,
   onClearDocument,
+  onSaveDocument,
   statusBar,
   children
 }: {
@@ -40,6 +42,7 @@ export default function StudioLayout({
   examples: SmExample[];
   onAppendExample: (example: SmExample) => void;
   onClearDocument: () => void;
+  onSaveDocument: () => void;
   statusBar?: ReactNode;
   children: ReactNode;
 }) {
@@ -82,6 +85,14 @@ export default function StudioLayout({
             )}
           </Breadcrumbs>
           <Box sx={{ flex: 1 }} />
+          <Button
+            color="inherit"
+            size="small"
+            startIcon={<SaveIcon />}
+            onClick={onSaveDocument}
+          >
+            Save
+          </Button>
           <Button
             color="inherit"
             size="small"

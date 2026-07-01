@@ -5,6 +5,7 @@ entry Model:
 
 Machine:
     'machine' name=ID '{'
+        ('description' description=STRING)?
         (variablesBlock=VariablesBlock)?
         (eventsBlock=EventsBlock)?
         (actionsBlock=ActionsBlock)?

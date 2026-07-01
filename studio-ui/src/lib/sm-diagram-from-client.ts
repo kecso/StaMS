@@ -127,7 +127,8 @@ export function buildSmDiagramFromClient(
 
   const machines = machineNodes.map((machine) => ({
     id: machine.getId(),
-    name: nodeName(machine)
+    name: nodeName(machine),
+    description: machineDescription(machine)
   }));
   log('machines under root:', machines);
 
@@ -174,6 +175,7 @@ function machineGraph(client: GmeClient, machine: GmeClientNode, meta: StaMsMeta
   return {
     machineId: machine.getId(),
     machineName: nodeName(machine),
+    machineDescription: machineDescription(machine),
     children
   };
 }
@@ -247,6 +249,11 @@ function pointerLabel(client: GmeClient, node: GmeClientNode, pointer: string): 
 function nodeName(node: GmeClientNode): string {
   const name = node.getAttribute('name');
   return typeof name === 'string' && name.length > 0 ? name : node.getId();
+}
+
+function machineDescription(node: GmeClientNode): string | undefined {
+  const description = node.getAttribute('description');
+  return typeof description === 'string' && description.length > 0 ? description : undefined;
 }
 
 function attrBool(node: GmeClientNode, name: string): boolean {

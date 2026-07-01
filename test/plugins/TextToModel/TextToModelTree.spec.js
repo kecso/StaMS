@@ -106,6 +106,14 @@ describe('TextToModel tree output', function () {
                         });
                     }
                     expect(instances('Machine').length).to.equal(1);
+                    var machineEntry = instances('Machine')[0];
+                    expect(machineEntry.name).to.equal('Turnstile');
+                    var machineNode = nodes.find(function (node) {
+                        return core.getPath(node) === machineEntry.path;
+                    });
+                    expect(core.getAttribute(machineNode, 'description')).to.equal(
+                        'Coin-operated turnstile with safety and goal constraints.'
+                    );
                     expect(instances('State').length).to.equal(2);
                     expect(instances('Transition').length).to.equal(4);
                     var machinePath = instances('Machine')[0].path;

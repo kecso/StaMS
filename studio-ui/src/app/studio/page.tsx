@@ -21,6 +21,7 @@ import { buildSmDiagramFromClient, EMPTY_DIAGRAM_VIEW, PROJECT_ROOT } from '@/li
 import { buildConstraintsFromClient } from '@/lib/sm-constraints-from-client';
 import { buildVerificationModelFromClient } from '@/lib/sm-verification-from-client';
 import { loadDoc, saveDoc } from '@/lib/sm-document';
+import { downloadSmFile } from '@/lib/sm-export';
 import { SM_EXAMPLES, appendExampleText, getExampleById, type SmExample } from '@/lib/sm-examples';
 import { countDiagnostics, useSmValidation } from '@/lib/sm-parse';
 import {
@@ -94,6 +95,11 @@ export default function StudioPage() {
       return next;
     });
   }, []);
+
+  const handleSaveDocument = useCallback(() => {
+    saveDoc(text);
+    downloadSmFile(text, docName);
+  }, [text, docName]);
 
   const handleClearDocument = useCallback(() => {
     setText('');
@@ -277,6 +283,7 @@ export default function StudioPage() {
       examples={SM_EXAMPLES}
       onAppendExample={handleAppendExample}
       onClearDocument={handleClearDocument}
+      onSaveDocument={handleSaveDocument}
       statusBar={statusBar}
     >
       <Stack spacing={1} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>

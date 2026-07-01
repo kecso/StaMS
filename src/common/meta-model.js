@@ -25,7 +25,7 @@ define([], function () {
             },
             {
                 name: 'Machine',
-                attributes: ['name'],
+                attributes: ['name', 'description'],
                 children: ['Variable', 'Event', 'Action', 'Guard', 'Constraint', 'State', 'Transition'],
                 pointers: { definedIn: 'File' },
                 sets: {}

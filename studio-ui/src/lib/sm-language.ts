@@ -13,6 +13,7 @@ export const SM_LANGUAGE_ID = 'state-machine';
 
 const KEYWORDS = [
   'machine',
+  'description',
   'variables',
   'events',
   'actions',

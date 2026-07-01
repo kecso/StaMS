@@ -1,4 +1,6 @@
 machine Door {
+  description "Open/closed door with lock actions."
+
   events { open close knock }
   actions {
     lockDoor { }

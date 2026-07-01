@@ -5,6 +5,7 @@ import {
   Button,
   FormControl,
   InputLabel,
+  ListItemText,
   MenuItem,
   Select,
   Typography
@@ -258,15 +259,26 @@ export default function SmDiagram({
             >
               {view.machines.map((machine) => (
                 <MenuItem key={machine.id} value={machine.id}>
-                  {machine.name}
+                  <ListItemText
+                    primary={machine.name}
+                    secondary={machine.description}
+                    secondaryTypographyProps={{ sx: { whiteSpace: 'normal' } }}
+                  />
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         ) : (
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            {graph?.machineName || 'Machine'}
-          </Typography>
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              {graph?.machineName || 'Machine'}
+            </Typography>
+            {graph?.machineDescription && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                {graph.machineDescription}
+              </Typography>
+            )}
+          </Box>
         )}
         <Box sx={{ flex: 1 }} />
         {canUseTools && (

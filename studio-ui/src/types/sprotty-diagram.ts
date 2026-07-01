@@ -14,11 +14,13 @@ export interface SmDiagramView {
 export interface SmMachineRef {
   id: string;
   name: string;
+  description?: string;
 }
 
 export interface SmMachineGraph {
   machineId: string;
   machineName: string;
+  machineDescription?: string;
   children: SmDiagramElement[];
 }
 

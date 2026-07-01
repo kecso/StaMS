@@ -17,6 +17,7 @@ import {
   SPROTTY_DIV_ID,
   createSmDiagramContainer
 } from '@/lib/sprotty/diagram-container';
+import { applySmHighlight } from '@/lib/sprotty/sm-highlight-dom';
 import { smGraphToSGraph, type SmHighlight } from '@/lib/sprotty/sm-to-sgraph';
 
 type SprottyCanvasProps = {
@@ -79,22 +80,33 @@ export default function SprottyCanvas({ graph, highlight, layoutEpoch = 0 }: Spr
     if (!modelSource) {
       return;
     }
-    // Re-fit only when the graph structure changes, not on highlight-only updates
-    // (re-centering on every simulation step would feel jumpy).
-    const shouldFit = lastFittedGraphRef.current !== graph;
+    const graphChanged = lastFittedGraphRef.current !== graph;
     let cancelled = false;
-    void modelSource.setModel(smGraphToSGraph(graph, highlight)).then(() => {
-      if (cancelled || !shouldFit) {
-        return;
+
+    const applyHighlight = () => {
+      if (!cancelled) {
+        applySmHighlight(highlight);
       }
-      lastFittedGraphRef.current = graph;
-      // ELK lays the graph out from the top-left origin, so without this the
-      // states hug the left edge. Fitting to the whole model (empty id list ⇒
-      // all elements) centers it; maxZoom keeps small machines at natural size.
-      void actionDispatcherRef.current?.dispatch(
-        FitToScreenAction.create([], { padding: 40, maxZoom: 1, animate: false })
-      );
-    });
+    };
+
+    if (graphChanged) {
+      void modelSource.setModel(smGraphToSGraph(graph)).then(() => {
+        if (cancelled) {
+          return;
+        }
+        lastFittedGraphRef.current = graph;
+        applyHighlight();
+        // ELK lays the graph out from the top-left origin, so without this the
+        // states hug the left edge. Fitting to the whole model (empty id list ⇒
+        // all elements) centers it; maxZoom keeps small machines at natural size.
+        void actionDispatcherRef.current?.dispatch(
+          FitToScreenAction.create([], { padding: 40, maxZoom: 1, animate: false })
+        );
+      });
+    } else {
+      applyHighlight();
+    }
+
     return () => {
       cancelled = true;
     };

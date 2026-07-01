@@ -1,4 +1,6 @@
 machine Vending {
+  description "Idle, selection, and dispensing flow."
+
   events { coin select dispense cancel }
   actions {
     acceptPayment { }

@@ -1,4 +1,6 @@
 machine Counter {
+  description "Counts to full with safety and goal constraints; reset only from Full."
+
   variables {
     count: float = 0
   }

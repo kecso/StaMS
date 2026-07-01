@@ -1,4 +1,6 @@
 machine TrafficLight {
+  description "Three-state cyclic controller."
+
   events { tick }
   actions {
     showGreen { }

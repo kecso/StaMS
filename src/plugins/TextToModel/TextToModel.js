@@ -33,6 +33,16 @@ define([
         }
     }
 
+    function unquoteString(value) {
+        if (!value || typeof value !== 'string') {
+            return '';
+        }
+        if (value.length >= 2 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+            return value.slice(1, -1);
+        }
+        return value;
+    }
+
     function metaTypeName(core, node) {
         var metaNode = node ? core.getMetaType(node) : null;
         return metaNode ? core.getAttribute(metaNode, 'name') : null;
@@ -121,6 +131,9 @@ define([
                         machineNode = self.core.createNode({parent: self.rootNode, base: self.META['Machine']});
 
                     self.core.setAttribute(machineNode, 'name', machine.name);
+                    if (machine.description) {
+                        self.core.setAttribute(machineNode, 'description', unquoteString(machine.description));
+                    }
 
                     machine.variablesBlock?.variables.forEach(function (variable) {
                         var variableNode = self.core.createNode({parent: machineNode, base: self.META['Variable']});

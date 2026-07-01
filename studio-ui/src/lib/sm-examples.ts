@@ -10,12 +10,27 @@ export type SmExample = {
 /** Canonical verification walkthrough (matches `examples/turnstile.sm`). */
 export const VERIFICATION_EXAMPLE_ID = 'turnstile';
 
-export const SM_EXAMPLES: SmExample[] = [
+/** Read the first machine-level `description "..."` from `.sm` text. */
+export function extractMachineDescription(text: string): string | undefined {
+  const match = text.match(/^\s*description\s+"([^"]*)"/m);
+  return match?.[1];
+}
+
+function withDescription(example: Omit<SmExample, 'description'> & { description?: string }): SmExample {
+  return {
+    ...example,
+    description: example.description ?? extractMachineDescription(example.text) ?? example.title
+  };
+}
+
+const RAW_EXAMPLES: Array<Omit<SmExample, 'description'> & { description?: string }> = [
   {
     id: VERIFICATION_EXAMPLE_ID,
     title: 'Turnstile',
-    description: 'Coin-operated turnstile with safety and goal constraints.',
+    hasVerification: true,
     text: `machine Turnstile {
+  description "Coin-operated turnstile with safety and goal constraints."
+
   variables {
     alarmCount: float = 0.0
   }
@@ -67,9 +82,10 @@ export const SM_EXAMPLES: SmExample[] = [
   {
     id: 'counter',
     title: 'Counter',
-    description: 'Counts to full with safety and goal constraints; reset only from Full.',
     hasVerification: true,
     text: `machine Counter {
+  description "Counts to full with safety and goal constraints; reset only from Full."
+
   variables { count: float = 0 }
   events { tick reset }
   actions {
@@ -100,8 +116,9 @@ export const SM_EXAMPLES: SmExample[] = [
   {
     id: 'traffic-light',
     title: 'Traffic light',
-    description: 'Three-state cyclic controller.',
     text: `machine TrafficLight {
+  description "Three-state cyclic controller."
+
   events { tick }
   actions {
     showGreen { }
@@ -123,8 +140,9 @@ export const SM_EXAMPLES: SmExample[] = [
   {
     id: 'door',
     title: 'Door lock',
-    description: 'Open/closed door with lock actions.',
     text: `machine Door {
+  description "Open/closed door with lock actions."
+
   events { open close knock }
   actions {
     lockDoor { }
@@ -147,8 +165,9 @@ export const SM_EXAMPLES: SmExample[] = [
   {
     id: 'vending',
     title: 'Vending machine',
-    description: 'Idle, selection, and dispensing flow.',
     text: `machine Vending {
+  description "Idle, selection, and dispensing flow."
+
   events { coin select dispense cancel }
   actions {
     acceptPayment { }
@@ -169,6 +188,8 @@ export const SM_EXAMPLES: SmExample[] = [
 }`
   }
 ];
+
+export const SM_EXAMPLES: SmExample[] = RAW_EXAMPLES.map(withDescription);
 
 export function getExampleById(id: string): SmExample | undefined {
   return SM_EXAMPLES.find((item) => item.id === id);
